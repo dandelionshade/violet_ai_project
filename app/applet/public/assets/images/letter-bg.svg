@@ -1,0 +1,6 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#eaddcf"/>
+  <line x1="10%" y1="20%" x2="90%" y2="20%" stroke="#d4af37" stroke-width="2" opacity="0.3"/>
+  <line x1="10%" y1="80%" x2="90%" y2="80%" stroke="#d4af37" stroke-width="2" opacity="0.3"/>
+  <text x="50%" y="50%" font-family="serif" font-size="60" fill="#8b7355" text-anchor="middle" letter-spacing="10">LETTER BACKGROUND</text>
+</svg>

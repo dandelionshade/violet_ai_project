@@ -1,0 +1,6 @@
+<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#2c241b"/>
+  <rect x="100" y="100" width="1720" height="880" fill="#3a2f24" rx="20"/>
+  <text x="50%" y="45%" font-family="serif" font-size="60" fill="#d4af37" text-anchor="middle" letter-spacing="10">GAME BACKGROUND</text>
+  <text x="50%" y="55%" font-family="serif" font-size="30" fill="#ffffff" opacity="0.5" text-anchor="middle" letter-spacing="5">(Replace with your image later)</text>
+</svg>

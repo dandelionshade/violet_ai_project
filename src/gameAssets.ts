@@ -1,0 +1,15 @@
+export const GAME_ASSETS = {
+  titleBg: '/assets/images/title-bg.jpg',
+  bg: '/assets/images/game-bg.jpg',
+  spriteNeutral: '/assets/images/violet-neutral.png',
+  spriteSmile: '/assets/images/violet-smile.png',
+  spriteSad: '/assets/images/violet-sad.png',
+  spriteSurprised: '/assets/images/violet-surprised.png',
+  spriteThoughtful: '/assets/images/violet-thoughtful.png',
+  spriteCrying: '/assets/images/violet-crying.png',
+  letterBg: '/assets/images/letter-bg.jpg',
+  live2dModel: 'https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display@master/test/assets/haru/haru_greeter_t03.model3.json',
+  typeSound: 'https://www.soundjay.com/communication/typewriter-key-1.mp3',
+  ambientSound: 'https://www.soundjay.com/nature/rain-01.mp3',
+  bgm: 'https://www.chosic.com/wp-content/uploads/2021/04/Gymnopedie-No-1.mp3',
+} as const;

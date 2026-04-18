@@ -1,0 +1,103 @@
+/* 引入 Tailwind CSS 的核心样式 */
+@import "tailwindcss";
+
+/* 自定义 Tailwind 主题变量 */
+@theme {
+  /* 定义无衬线字体族 (主要用于按钮和输入框) */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* 定义衬线字体族 (主要用于对话框文本和标题，营造文学感) */
+  --font-serif: "Noto Serif SC", "Cormorant Garamond", serif;
+}
+
+/* 基础层样式覆盖 */
+@layer base {
+  body {
+    /* 开启字体抗锯齿，让文字在屏幕上显示更平滑清晰 */
+    @apply antialiased;
+  }
+}
+
+/* 定义光标闪烁的 CSS 动画 */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; } /* 动画开始和结束时完全不透明 */
+  50% { opacity: 0; }      /* 动画进行到一半时完全透明 */
+}
+
+/* 定义羽毛笔摇摆动画 */
+@keyframes sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-15deg); }
+}
+
+/* 为带有 .cursor 类的元素添加一个伪元素 (即打字机后面的闪烁光标) */
+.cursor::after {
+  content: '▼'; /* 光标的形状是一个向下的倒三角 */
+  animation: cursor-blink 1s step-end infinite; /* 应用上面定义的闪烁动画，1秒一次，无限循环 */
+  margin-left: 8px; /* 距离文字左边距 8px */
+  font-size: 0.8em; /* 字体大小为父元素的 0.8 倍 */
+  color: currentColor; /* 光标颜色继承当前文字颜色 */
+  vertical-align: baseline;
+}
+
+/* 自定义滚动条样式 (匹配信纸主题) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e2d5c5;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #cbbba4;
+}
+
+/* Name tag slide-in animation */
+@keyframes slide-down-fade {
+  0% { transform: translate(-50%, -10px); opacity: 0; }
+  100% { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.animate-name-tag {
+  animation: slide-down-fade 0.4s ease-out forwards;
+}
+
+/* Background emotion animations */
+@keyframes bg-pulse-happy {
+  0%, 100% { background-color: rgba(255, 220, 150, 0); }
+  50% { background-color: rgba(255, 220, 150, 0.15); }
+}
+
+@keyframes bg-pulse-sad {
+  0%, 100% { background-color: rgba(100, 150, 255, 0); }
+  50% { background-color: rgba(100, 150, 255, 0.15); }
+}
+
+@keyframes bg-pulse-angry {
+  0%, 100% { background-color: rgba(255, 100, 100, 0); }
+  50% { background-color: rgba(255, 100, 100, 0.15); }
+}
+
+@keyframes bg-shake-surprised {
+  0%, 100% { transform: scale(1); }
+  10%, 30%, 50%, 70%, 90% { transform: scale(1.01) translate(1px, 1px); }
+  20%, 40%, 60%, 80% { transform: scale(1.01) translate(-1px, -1px); }
+}
+
+.bg-effect-happy {
+  animation: bg-pulse-happy 4s ease-in-out infinite;
+}
+
+.bg-effect-sad {
+  animation: bg-pulse-sad 4s ease-in-out infinite;
+}
+
+.bg-effect-angry {
+  animation: bg-pulse-angry 4s ease-in-out infinite;
+}
+
+.bg-effect-surprised {
+  animation: bg-shake-surprised 0.5s ease-in-out;
+}

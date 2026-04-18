@@ -1,0 +1,37 @@
+<!doctype html>
+<!-- 声明文档类型为 HTML5 -->
+<html lang="zh-CN">
+  <!-- 设置语言为简体中文 -->
+  <head>
+    <meta charset="UTF-8" />
+    <!-- 设置视口，确保在移动设备上正确缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Violet AI - Visual Novel</title>
+    
+    <!-- 预连接 Google Fonts 以加快字体加载速度 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 引入 Noto Serif SC (思源宋体) 和 Inter 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Live2D Cubism Core -->
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
+  </head>
+  
+  <!-- 
+    body 样式说明:
+    bg-black: 背景纯黑
+    text-white: 文字默认白色
+    font-sans: 默认使用无衬线字体 (Inter)
+    overflow-hidden: 隐藏滚动条，防止页面滚动，保持全屏游戏体验
+  -->
+  <body class="bg-black text-white font-sans overflow-hidden">
+    <!-- React 应用挂载的根节点 -->
+    <div id="root"></div>
+    
+    <!-- 引入 React 应用入口，type="module" 允许使用 ES6 模块导入 -->
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
