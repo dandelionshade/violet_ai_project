@@ -18,7 +18,7 @@
 
 ### 1.2 前后端状态强约束 (Strict State Clamping)
 *   以往的架构中，大语言模型 (LLM) 和前端享有过高的状态修改权。
-*   **现状**：现在 `server.ts` 才是真理的最终来源。在 `/api/chat` 路由中，前端传入的 `GameState` 中的 `trust`（共鸣度）和 `affection`（好感度）会被后端的 `clamp()` 函数严格约束在 0~100 的区间内。后端处理完毕后会覆盖前端数据并返回。
+*   **现状**：现在 `server/index.ts`（配合 `server/routes/chat.ts`）才是真理的最终来源。在 `/api/chat` 路由中，前端传入的 `GameState` 中的 `trust`（共鸣度）和 `affection`（好感度）会被后端严格约束在 0~100 的区间内。后端处理完毕后会覆盖前端数据并返回。
 
 ### 1.3 服务端 RAG 引擎 (Server-side Vector DB)
 *   为了解耦前端并提升性能，向量相似度匹配已移至 `server/VectorDB.ts`（基于文件的轻量级向量检索）。前端目前只需负责向后端发送 `message`。

@@ -32,7 +32,6 @@ export class PineconeService {
   static async initialize() {
     if (!this.instance) {
       const apiKey = process.env.PINECONE_API_KEY;
-      const environment = process.env.PINECONE_ENVIRONMENT || 'us-west1-gcp-free';
 
       if (!apiKey) {
         throw new Error('PINECONE_API_KEY environment variable is not set');
@@ -40,7 +39,6 @@ export class PineconeService {
 
       this.instance = new Pinecone({
         apiKey,
-        environment,
       });
 
       console.log(`[Pinecone] Initialized with index: ${this.indexName}`);
@@ -72,7 +70,7 @@ export class PineconeService {
     };
 
     try {
-      await index.namespace(this.namespace).upsert([record]);
+      await index.namespace(this.namespace).upsert({ records: [record] });
       console.log(`[Pinecone] Added memory: ${recordId}`);
       return recordId;
     } catch (error) {
@@ -125,7 +123,7 @@ export class PineconeService {
       const batchSize = 100;
       for (let i = 0; i < records.length; i += batchSize) {
         const batch = records.slice(i, i + batchSize);
-        await index.namespace(this.namespace).upsert(batch);
+        await index.namespace(this.namespace).upsert({ records: batch });
         console.log(
           `[Pinecone] Upserted batch ${Math.floor(i / batchSize) + 1} (${batch.length} records)`
         );
@@ -184,7 +182,7 @@ export class PineconeService {
     try {
       // 检查索引是否存在
       const indexes = await client.listIndexes();
-      const indexExists = indexes.some(idx => idx.name === this.indexName);
+      const indexExists = indexes.indexes?.some(idx => idx.name === this.indexName) ?? false;
 
       if (!indexExists) {
         console.log(`[Pinecone] Creating index: ${this.indexName}`);

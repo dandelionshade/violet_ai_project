@@ -18,8 +18,8 @@
 - [x] 创建 `server/services/StoryService.ts` - 故事管理层
 - [x] 创建 `server/routes/chat.ts` - 聊天路由
 - [x] 创建 `server/index.ts` - 新入口文件
-- [ ] 更新 `server.ts` 改为调用 `server/index.ts`（或直接删除）
-- [ ] 测试后端启动是否正常
+- [x] 删除旧入口 `server.ts`，统一使用 `server/index.ts`
+- [x] 测试后端启动是否正常
 
 ### React 框架搭建
 - [x] 创建 `src/components/`、`src/hooks/`、`src/store/` 目录
@@ -29,8 +29,8 @@
 - [x] 创建 `src/components/ConfigModal.tsx` - 配置组件
 - [x] 创建 `src/components/SaveLoadModal.tsx` - 存档读档组件（占位）
 - [x] 创建 `src/components/ArchiveModal.tsx` - 档案库组件（占位）
-- [ ] 创建 `src/App.tsx` - React 根组件
-- [ ] 更新 `src/main.tsx` 改为 React entry point
+- [x] 创建 `src/App.tsx` - React 根组件
+- [x] 更新 `src/main.tsx` 改为 React entry point
 - [ ] 测试 React 组件是否能正常加载
 
 ### 依赖管理
@@ -103,44 +103,45 @@
 
 ### 路由完成
 - [x] 已创建 `server/routes/chat.ts`
-- [ ] 创建 `server/routes/tts.ts` - TTS 路由
-- [ ] 创建 `server/routes/health.ts` - 健康检查路由
+- [x] 创建 `server/routes/tts.ts` - TTS 路由
+- [x] 创建 `server/routes/health.ts` - 健康检查路由
 
 ### 业务逻辑拆分
 - [x] 已创建 StoryService、LLMService、MemoryService
-- [ ] 创建 `server/services/AudioService.ts` - TTS 服务
-- [ ] 移除 `server.ts` 的内联 TTS 逻辑
+- [x] 创建 `server/services/AudioService.ts` - TTS 服务
+- [x] 移除 `server.ts` 的内联 TTS 逻辑
 
 ### 中间件完善
 - [x] 已创建错误处理中间件
-- [ ] 创建 `server/middleware/logger.ts` - 日志中间件
-- [ ] 创建 `server/middleware/validation.ts` - 请求校验
+- [x] 创建 `server/middleware/logger.ts` - 日志中间件
+- [x] 创建 `server/middleware/validation.ts` - 请求校验
 
 ### 模型与校验
 - [x] 已创建 `server/models/types.ts`
-- [ ] 创建 `server/models/validators.ts` - Zod 校验规则
-- [ ] 应用验证规则到路由
+- [x] 创建 `server/models/validators.ts` - 请求校验规则
+- [x] 应用验证规则到路由
 
 ---
 
 ## 🧪 第五阶段：测试与清理（第 5-6 周）
 
 ### 单元测试
-- [ ] 创建 `__tests__/unit/StoryService.test.ts`
-- [ ] 创建 `__tests__/unit/LLMService.test.ts`
-- [ ] 创建 `__tests__/unit/gameStore.test.ts`
-- [ ] 运行 `npm test` 验证
+- [x] 创建 `__tests__/unit/StoryService.test.ts`
+- [x] 创建 `__tests__/unit/LLMService.test.ts`
+- [x] 创建 `__tests__/unit/gameStore.test.ts`
+- [x] 运行 `npm test` 验证
 
 ### 集成测试
-- [ ] 创建 `__tests__/integration/chat-api.test.ts`
-- [ ] 测试完整的 /api/chat 流程
-- [ ] 测试 RAG 记忆检索
-- [ ] 测试错误处理
+- [x] 创建 `__tests__/integration/routes.test.ts`
+- [x] 测试输入校验与健康检查路由
+- [x] 测试完整的 /api/chat 流程（含 LLM mock）
+- [x] 测试 RAG 记忆检索分支（mock）
+- [x] 测试错误处理
 
 ### 旧代码清理
 - [ ] 标记 `main.ts` 中可删除的代码
 - [ ] 逐步删除已迁移到 React 的代码
-- [ ] 删除原始 `server.ts`（替代为 `server/index.ts`）
+- [x] 删除原始 `server.ts`（替代为 `server/index.ts`）
 
 ### 性能优化
 - [ ] 运行 `npm run build` 构建
@@ -176,14 +177,14 @@
 
 | 阶段       | 完成度 | 优先级 | 状态     |
 | ---------- | ------ | ------ | -------- |
-| 框架搭建   | 90%    | 🔴      | ⏳ 进行中 |
+| 框架搭建   | 100%   | 🔴      | ✅ 已完成 |
 | 向量库集成 | 50%    | 🔴      | ⏳ 进行中 |
 | UI 迁移    | 20%    | 🟠      | ⏳ 待开始 |
-| 后端完整化 | 40%    | 🟠      | ⏳ 待开始 |
-| 测试与清理 | 0%     | 🟡      | ⏳ 待开始 |
+| 后端完整化 | 85%    | 🟠      | ⏳ 进行中 |
+| 测试与清理 | 65%    | 🟡      | ⏳ 进行中 |
 | 部署与发布 | 0%     | 🟡      | ⏳ 待开始 |
 
-**整体完成度**: 30%
+**整体完成度**: 64%
 
 ---
 
@@ -221,7 +222,16 @@
 
 ### 待记录...
 
+### 2026-04-18
+- ✅ 修复 5 个 TypeScript 错误（Pinecone SDK 类型适配 + ErrorBoundary 类型声明）
+- ✅ 完成最小验收：`npm run lint`、`npm run build`、`npm run dev`
+- ✅ 删除旧入口 `server.ts`，避免双实现漂移
+- ✅ 拆分 TTS 为 `server/routes/tts.ts` + `server/services/AudioService.ts`
+- ✅ 新增 `server/routes/health.ts`
+- ✅ 新增请求校验链路 `server/middleware/validation.ts` + `server/models/validators.ts`
+- ✅ 补齐基础单测与集成测试骨架（`__tests__/unit` + `__tests__/integration`）
+
 ---
 
 **维护者**：Violet AI 开发团队  
-**最后更新**：2026-04-17
+**最后更新**：2026-04-18

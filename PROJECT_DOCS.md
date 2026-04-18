@@ -26,9 +26,14 @@
 - `/index.html`: 项目的入口 HTML 文件。
 - `/src/main.ts`: 前端核心逻辑。负责动态生成 UI、绑定事件监听器、处理与后端的 API 通信、管理 Live2D 渲染、处理转场动画以及管理多语言切换。
 - `/src/index.css`: 全局样式文件。引入了 Tailwind CSS。
-- `/server.ts`: 后端核心逻辑。使用 Express 搭建服务器，集成了 Vite 中间件。包含核心的 `/api/chat` 路由（对话状态机）和 `/api/embed` 路由（生成文本向量）。
+- `/server/index.ts`: 后端入口。使用 Express 搭建服务器并整合分层路由（`/api/chat`、`/api/tts`、`/api/health`）。
+- `/server/routes/chat.ts`: 对话主路由，负责剧情推进与 LLM 调用编排。
+- `/server/routes/tts.ts`: TTS 路由，负责语音生成请求。
+- `/server/routes/health.ts`: 健康检查路由。
+- `/server/services/AudioService.ts`: TTS 服务封装（Edge TTS）。
 - `/src/core/StateManager.ts`: 负责本地存储（存档/读档）、信件库（Archive）、信任度（Trust）与好感度（Affection）的数据管理。
-- `/src/core/VectorMemory.ts`: 客户端向量数据库管理器，负责存储、检索玩家的对话历史，实现 RAG 记忆。
+- `/server/services/MemoryService.ts`: 服务端记忆服务，负责向量检索与存储编排。
+- `/server/services/PineconeService.ts`: Pinecone 向量数据库适配层。
 - `/src/core/Live2DManager.ts`: 封装 PixiJS 和 Live2D 模型的加载、渲染与表情/动作映射逻辑。
 - `/server/StoryManager.ts`: 核心剧本与人设管理器。控制对话的 6 个阶段，根据好感度/信任度以及 RAG 检索到的历史记忆动态生成 Prompt。
 - `/src/core/AudioManager.ts`: 管理 BGM、环境音效（打字机/白噪音）以及基于 Web Speech API 的 TTS 语音。
@@ -49,7 +54,7 @@
 - **信任度 (Trust)**: 影响对话深度的解锁。高信任度会解锁更私人的对话选项和 AI 的主动分享。
 
 ### 3. RAG 记忆系统 (Retrieval-Augmented Generation)
-- **向量化存储**: 玩家的每一轮对话都会通过 Gemini API (`gemini-embedding-2-preview`) 转化为向量，并存储在本地的 `VectorMemoryManager` 中。
+- **向量化存储**: 玩家的每一轮对话都会通过 Gemini API (`gemini-embedding-2-preview`) 转化为向量，并存储在服务端 Pinecone 中。
 - **灵魂共鸣**: 在多周目游玩时，系统会检索与当前对话最相关的历史记忆，并注入到 AI 的 Prompt 中，使薇尔莉特能够回忆起玩家很久以前说过的原话。
 
 ### 4. 视觉与表现系统
@@ -85,4 +90,4 @@
 5. **记忆持久化升级**: 实现 IndexedDB 存储，打破浏览器本地存储的容量限制。
 
 ---
-*文档更新时间: 2026-04-17*
+*文档更新时间: 2026-04-18*

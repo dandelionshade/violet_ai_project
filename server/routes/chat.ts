@@ -11,6 +11,7 @@ import { LLMService } from '../services/LLMService';
 import { MemoryService } from '../services/MemoryService';
 import { StoryService } from '../services/StoryService';
 import { asyncHandler, errorHandler } from '../middleware/errorHandler';
+import { validateChatRequestMiddleware } from '../middleware/validation';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ const clamp = (val: number, min: number, max: number) =>
  */
 router.post(
   '/chat',
+  validateChatRequestMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
     const { message, reset } = req.body as ChatRequest;
     const state = req.body.state as GameState;

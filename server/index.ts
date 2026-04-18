@@ -12,8 +12,11 @@ import { createServer as createViteServer } from 'vite';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler';
+import { requestLogger } from './middleware/logger';
 import { MemoryService } from './services/MemoryService';
 import chatRoutes from './routes/chat';
+import ttsRoutes from './routes/tts';
+import healthRoutes from './routes/health';
 
 // 加载环境变量
 dotenv.config({ override: true });
@@ -27,12 +30,7 @@ async function startServer() {
 
   // ===== 中间件配置 =====
   app.use(express.json());
-
-  // ===== 日志中间件 =====
-  app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-    next();
-  });
+  app.use(requestLogger);
 
   // ===== 初始化服务 =====
   try {
@@ -47,56 +45,8 @@ async function startServer() {
   // ===== 路由配置 =====
   // 使用分层的路由
   app.use('/api', chatRoutes);
-
-  // 健康检查路由
-  app.get('/api/health', (req, res) => {
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      version: '2.0.0-refactored',
-    });
-  });
-
-  // ===== TTS 路由（保留） =====
-  app.post('/api/tts', async (req, res) => {
-    const { text } = req.body;
-    if (!text) {
-      return res.status(400).json({ error: 'Text is required' });
-    }
-
-    try {
-      // 动态导入 node-edge-tts
-      const { EdgeTTS } = await import('node-edge-tts');
-      const tts = new EdgeTTS({
-        voice: 'ja-JP-NanamiNeural',
-        lang: 'ja-JP',
-        pitch: '+10Hz',
-        rate: '-10%',
-        volume: '+0%',
-      });
-
-      // 生成临时文件路径
-      const { randomUUID } = await import('crypto');
-      const fs = await import('fs');
-      const os = await import('os');
-
-      const tempFilePath = path.join(os.tmpdir(), `${randomUUID()}.mp3`);
-
-      // 生成音频
-      await tts.ttsPromise(text, tempFilePath);
-
-      // 读取并返回
-      const audioBuffer = fs.readFileSync(tempFilePath);
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.send(audioBuffer);
-
-      // 清理临时文件
-      fs.unlinkSync(tempFilePath);
-    } catch (error) {
-      console.error('[TTS] Error:', error);
-      res.status(500).json({ error: 'Failed to generate TTS' });
-    }
-  });
+  app.use('/api', ttsRoutes);
+  app.use('/api', healthRoutes);
 
   // ===== Vite 中间件（开发环境） =====
   if (process.env.NODE_ENV !== 'production') {
