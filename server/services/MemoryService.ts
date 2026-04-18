@@ -1,10 +1,10 @@
 /**
  * 记忆服务（Memory Service）
- * 集中管理向量检索逻辑，调用 PineconeService
+ * 集中管理向量检索逻辑，调用本地 SQLite 向量库
  */
 
-import { PineconeService } from './PineconeService';
 import { LLMService } from './LLMService';
+import { ServerVectorDB } from '../VectorDB';
 
 export class MemoryService {
   /**
@@ -19,8 +19,8 @@ export class MemoryService {
       // 生成当前消息的嵌入向量
       const embedding = await LLMService.generateEmbedding(message);
 
-      // 在 Pinecone 中搜索相关向量
-      const memories = await PineconeService.search(playerName, embedding, topK);
+      // 在本地 SQLite 中搜索相关向量
+      const memories = ServerVectorDB.search(playerName, embedding, topK);
 
       console.log(
         `[Memory] Retrieved ${memories.length} relevant memories for player: ${playerName}`
@@ -39,7 +39,7 @@ export class MemoryService {
   static async saveMemory(playerName: string, message: string): Promise<void> {
     try {
       const embedding = await LLMService.generateEmbedding(message);
-      await PineconeService.addMemory(playerName, message, embedding);
+      ServerVectorDB.addMemory(playerName, message, embedding);
       console.log(`[Memory] Saved memory for player: ${playerName}`);
     } catch (error) {
       console.error('[Memory] Failed to save memory:', error);
@@ -52,7 +52,7 @@ export class MemoryService {
    */
   static async clearPlayerMemories(playerName: string): Promise<void> {
     try {
-      await PineconeService.deletePlayerMemories(playerName);
+      ServerVectorDB.deletePlayerMemories(playerName);
       console.log(`[Memory] Cleared all memories for player: ${playerName}`);
     } catch (error) {
       console.error('[Memory] Failed to clear memories:', error);
@@ -61,12 +61,12 @@ export class MemoryService {
   }
 
   /**
-   * 初始化（确保 Pinecone 索引存在）
+   * 初始化本地向量存储
    */
   static async initialize(): Promise<void> {
     try {
-      await PineconeService.ensureIndexExists();
-      console.log('[Memory] Memory service initialized');
+      ServerVectorDB.initialize();
+      console.log('[Memory] Local vector service initialized');
     } catch (error) {
       console.error('[Memory] Failed to initialize:', error);
       throw error;

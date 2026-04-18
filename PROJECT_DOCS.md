@@ -13,7 +13,7 @@
 - **后端**: Node.js, Express
 - **构建工具**: Vite
 - **AI 集成**: `@google/genai` (用于调用 Google Gemini 接口生成对话与 Embedding 向量)
-- **数据库**: Client-side Vector Database (基于 `localStorage` 和余弦相似度的轻量级 RAG 实现)
+- **数据库**: 服务端 SQLite 向量库（`server/VectorDB.ts`），用于 RAG 记忆检索
 
 ### 建议优化选型 (Optimized Roadmap)
 为了提升应用在复杂交互下的可维护性及承载更海量的记忆，建议进行以下迭代：
@@ -33,7 +33,7 @@
 - `/server/services/AudioService.ts`: TTS 服务封装（Edge TTS）。
 - `/src/core/StateManager.ts`: 负责本地存储（存档/读档）、信件库（Archive）、信任度（Trust）与好感度（Affection）的数据管理。
 - `/server/services/MemoryService.ts`: 服务端记忆服务，负责向量检索与存储编排。
-- `/server/services/PineconeService.ts`: Pinecone 向量数据库适配层。
+- `/server/VectorDB.ts`: 本地 SQLite 向量数据库实现。
 - `/src/core/Live2DManager.ts`: 封装 PixiJS 和 Live2D 模型的加载、渲染与表情/动作映射逻辑。
 - `/server/StoryManager.ts`: 核心剧本与人设管理器。控制对话的 6 个阶段，根据好感度/信任度以及 RAG 检索到的历史记忆动态生成 Prompt。
 - `/src/core/AudioManager.ts`: 管理 BGM、环境音效（打字机/白噪音）以及基于 Web Speech API 的 TTS 语音。
@@ -54,7 +54,7 @@
 - **信任度 (Trust)**: 影响对话深度的解锁。高信任度会解锁更私人的对话选项和 AI 的主动分享。
 
 ### 3. RAG 记忆系统 (Retrieval-Augmented Generation)
-- **向量化存储**: 玩家的每一轮对话都会通过 Gemini API (`gemini-embedding-2-preview`) 转化为向量，并存储在服务端 Pinecone 中。
+- **向量化存储**: 玩家的每一轮对话都会通过 Gemini API (`gemini-embedding-2-preview`) 转化为向量，并存储在服务端 SQLite 中。
 - **灵魂共鸣**: 在多周目游玩时，系统会检索与当前对话最相关的历史记忆，并注入到 AI 的 Prompt 中，使薇尔莉特能够回忆起玩家很久以前说过的原话。
 
 ### 4. 视觉与表现系统
@@ -87,7 +87,7 @@
 2. **高级语音合成 (Voice Cloning)**: 接入 ElevenLabs 或 VITS 等高级 AI 语音 API，克隆原版声优的音色，替代目前的 Edge TTS。
 3. **架构大修 (React Migration)**: 将项目重构为 React 架构，以更好地支撑后续复杂的功能扩展。
 4. **高质量书信导出**: 开发基于 SVG 的高保真书信渲染器。
-5. **记忆持久化升级**: 实现 IndexedDB 存储，打破浏览器本地存储的容量限制。
+5. **记忆持久化升级**: 如需更高容量，可再评估迁移到托管向量数据库。
 
 ---
 *文档更新时间: 2026-04-18*

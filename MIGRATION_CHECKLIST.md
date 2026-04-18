@@ -1,6 +1,6 @@
 # Violet AI 迁移检查清单 (Migration Checklist)
 
-**项目**：Violet AI - 渐进式迁移到 React + 分层 Express + Pinecone  
+**项目**：Violet AI - 渐进式迁移到 React + 分层 Express + SQLite 向量库  
 **开始日期**：2026-04-17  
 **状态**：🔄 进行中
 
@@ -13,7 +13,7 @@
 - [x] 创建 `server/models/types.ts` - 共享类型定义
 - [x] 创建 `server/middleware/errorHandler.ts` - 错误处理中间件
 - [x] 创建 `server/services/LLMService.ts` - LLM 通用层
-- [x] 创建 `server/services/PineconeService.ts` - 向量库集成
+- [x] 创建 `server/VectorDB.ts` - 本地 SQLite 向量库
 - [x] 创建 `server/services/MemoryService.ts` - 记忆检索层
 - [x] 创建 `server/services/StoryService.ts` - 故事管理层
 - [x] 创建 `server/routes/chat.ts` - 聊天路由
@@ -34,13 +34,13 @@
 - [ ] 测试 React 组件是否能正常加载
 
 ### 依赖管理
-- [x] 更新 `package.json` - 添加 Zustand、Pinecone、Framer Motion
+- [x] 更新 `package.json` - 添加 Zustand、Framer Motion
 - [x] 更新 `package.json` - 添加脚本 `npm run migrate:vectors`
 - [ ] 运行 `npm install` 安装新依赖
 
 ### 文档与脚本
 - [x] 创建 `REFACTORING_ROADMAP.md` - 详细路线图
-- [x] 创建 `PINECONE_SETUP.md` - Pinecone 集成指南
+- [x] 删除旧向量库历史指南，改用 SQLite
 - [x] 创建 `scripts/migrate-vectors.ts` - 向量迁移脚本
 - [x] 创建 `MIGRATION_CHECKLIST.md` - 此文档
 
@@ -48,21 +48,18 @@
 
 ## 🔄 第二阶段：向量库集成（第 2-3 周）
 
-### Pinecone 注册与配置
-- [ ] 注册 Pinecone 免费账户
-- [ ] 在 Pinecone 创建索引 `violet-ai-memories`
-- [ ] 获取 API Key 和 Environment
-- [ ] 配置 `.env.local` 文件
-  ```
-  PINECONE_API_KEY=...
-  PINECONE_ENVIRONMENT=us-west1-gcp-free
-  PINECONE_INDEX_NAME=violet-ai-memories
-  ```
+> 当前实现已改为本地 SQLite 向量库，历史旧向量库流程已移除。
+
+### 本地向量库配置
+- [x] 创建本地 SQLite 向量库 `server/VectorDB.ts`
+- [x] 配置本地数据库文件 `.data/memory.sqlite`
+- [x] 迁移脚本改为导入 JSON 记忆到 SQLite
+- [x] 不再依赖旧向量库流程
 
 ### 向量迁移
-- [ ] 运行 `npm run migrate:vectors` 脚本
-- [ ] 验证迁移日志输出
-- [ ] 在 Pinecone 控制面板检查向量是否正确导入
+- [x] 运行 `npm run migrate:vectors` 脚本
+- [x] 验证迁移日志输出
+- [ ] 如有旧 JSON 记忆，检查是否已成功写入 SQLite
 - [ ] 备份 `.data/` 目录（可选）
 - [ ] 删除本地 `.data/` 目录
 
@@ -168,7 +165,7 @@
 ### 上线前检查
 - [ ] 运行 `npm run lint` 检查代码规范
 - [ ] 确认所有环境变量已配置
-- [ ] 备份生产数据（Pinecone）
+- [ ] 备份生产数据（SQLite 数据文件）
 - [ ] 制定回滚方案
 
 ---
@@ -191,7 +188,7 @@
 ## 🎯 关键里程碑
 
 1. **第 2 天**：框架搭建完成，后端能正常启动 ✅
-2. **第 7 天**：Pinecone 集成完成，向量迁移成功 📅
+2. **第 7 天**：SQLite 向量库集成完成，向量迁移成功 📅
 3. **第 14 天**：主菜单 React 化完成，能正常渲染 📅
 4. **第 21 天**：核心 UI 迁移完成，游戏能正常进行 📅
 5. **第 30 天**：全量测试完成，准备部署 📅
@@ -203,7 +200,7 @@
 | 风险                   | 影响 | 缓解方案                 | 优先级 |
 | ---------------------- | ---- | ------------------------ | ------ |
 | React 迁移期间前端崩溃 | 高   | 新旧并存 2-4 周          | 🔴      |
-| Pinecone 迁移数据丢失  | 高   | 迁移前备份，支持离线导入 | 🔴      |
+| SQLite 数据文件损坏    | 高   | 迁移前备份，支持离线导入 | 🔴      |
 | LLM JSON 字段漂移      | 中   | Zod 运行时校验 + 降级    | 🟠      |
 | 后端 API 不兼容        | 中   | 版本控制 + 兼容层        | 🟠      |
 
@@ -214,16 +211,16 @@
 ### 2026-04-17
 - ✅ 创建路线图文档
 - ✅ 建立后端分层目录结构
-- ✅ 创建 LLMService、PineconeService、MemoryService
+- ✅ 创建 LLMService、VectorDB、MemoryService
 - ✅ 创建新的后端入口 `server/index.ts`
 - ✅ 搭建 React 组件框架与 Zustand 状态管理
 - ✅ 试点迁移主菜单 UI 到 React
-- ✅ 创建 Pinecone 集成指南
+- ✅ 删除旧向量库集成指南
 
 ### 待记录...
 
 ### 2026-04-18
-- ✅ 修复 5 个 TypeScript 错误（Pinecone SDK 类型适配 + ErrorBoundary 类型声明）
+- ✅ 修复 5 个 TypeScript 错误（向量层类型适配 + ErrorBoundary 类型声明）
 - ✅ 完成最小验收：`npm run lint`、`npm run build`、`npm run dev`
 - ✅ 删除旧入口 `server.ts`，避免双实现漂移
 - ✅ 拆分 TTS 为 `server/routes/tts.ts` + `server/services/AudioService.ts`

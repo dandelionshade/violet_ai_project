@@ -2,7 +2,7 @@
 
 **开始日期**: 2026-04-17  
 **目标完成期**: 6-8 周  
-**核心目标**: Vanilla TS → React 18 + 分层 Express + 高级向量库
+**核心目标**: Vanilla TS → React 18 + 分层 Express + 本地 SQLite 向量检索
 
 ---
 
@@ -32,32 +32,30 @@
   - 预计行数：150 行
   - 时间：1 天
 
-### 第二阶段：向量库选型与迁移（第 2-3 周）
-- [ ] **任务 2.1**: 向量库评估与选型
-  - 对比 Pinecone / Weaviate / Milvus
-  - **选型决议**: Pinecone（首选）或 Weaviate（本地）
-  - 时间：2 小时
+### 第二阶段：向量库迁移（第 2-3 周）
+- [x] **任务 2.1**: 向量库选型完成
+  - 当前方案：本地 SQLite
+  - 时间：已完成
 
-- [ ] **任务 2.2**: Pinecone 集成
-  - 注册 Pinecone 免费账户
-  - 创建 `server/services/PineconeService.ts`
-  - 创建 `server/services/MigrationService.ts`（数据迁移）
+- [x] **任务 2.2**: 本地向量存储集成
+  - 创建 `server/VectorDB.ts`
+  - 创建 `server/services/MemoryService.ts`
   - 预计行数：250 行
-  - 时间：2 天
+  - 时间：已完成
 
-- [ ] **任务 2.3**: VectorDB 迁移脚本
+- [x] **任务 2.3**: VectorDB 迁移脚本
   - 创建 `scripts/migrate-vectors.ts`
-  - 从本地 JSON 导出向量，导入 Pinecone
+  - 从本地 JSON 导出向量，导入 SQLite
   - 验证向量完整性
   - 预计行数：150 行
-  - 时间：1 天
+  - 时间：已完成
 
-- [ ] **任务 2.4**: 后端 API 改造
-  - 替换 `server/VectorDB.ts` 调用为 `PineconeService.ts`
-  - 更新 `server.ts` 的 `/api/chat` 路由
+- [x] **任务 2.4**: 后端 API 改造
+  - 替换 `server/VectorDB.ts` 调用为本地 SQLite 实现
+  - 更新 `server/index.ts` 的 `/api/chat` 路由
   - 测试 RAG 检索流程
   - 预计改写：50 行
-  - 时间：1 天
+  - 时间：已完成
 
 ### 第三阶段：核心游戏 UI 迁移（第 3-4 周）
 - [ ] **任务 3.1**: 游戏进行中 UI 组件化
@@ -157,8 +155,8 @@ violet_ai_project/
 │   ├── services/
 │   │   ├── StoryService.ts         (剧情状态机)
 │   │   ├── LLMService.ts           (LLM 调用通用层)
-│   │   ├── MemoryService.ts        (向量检索，调用 PineconeService)
-│   │   ├── PineconeService.ts      (Pinecone 集成，替代 VectorDB.ts)
+│   │   ├── MemoryService.ts        (向量检索，调用 SQLite 向量库)
+│   │   ├── VectorDB.ts             (SQLite 向量存储)
 │   │   ├── AudioService.ts         (TTS 封装)
 │   │   └── MigrationService.ts     (数据迁移工具)
 │   ├── controllers/                (可选，当前可跳过)
@@ -233,9 +231,9 @@ violet_ai_project/
 - [ ] Day 5: 集成测试 + 修复 bug + 性能调整
 
 ### 第二周（向量库集成）
-- [ ] Day 6-7: Pinecone 注册 + SDK 集成 + 迁移脚本编写
-- [ ] Day 8-9: 向量数据迁移 + 验证
-- [ ] Day 10: 后端 API 改造 + 测试
+- [x] Day 6-7: SQLite 向量库 + 迁移脚本编写
+- [x] Day 8-9: 向量数据迁移 + 验证
+- [x] Day 10: 后端 API 改造 + 测试
 
 ### 第三周（游戏 UI 迁移）
 - [ ] Day 11-12: 游戏进行中 UI 组件化
@@ -259,7 +257,7 @@ violet_ai_project/
 1. **现在**: 创建后端分层目录结构
 2. **今天**: 搭建 React 组件框架
 3. **明天**: 主菜单 UI 试点迁移
-4. **后天**: Pinecone 集成与数据迁移
+4. **后天**: SQLite 向量迁移与验证
 
 ---
 
@@ -268,7 +266,7 @@ violet_ai_project/
 | 风险                   | 缓解方案                            | 优先级 |
 | ---------------------- | ----------------------------------- | ------ |
 | React 迁移期间前端崩溃 | 新旧代码并存 2-4 周，不删除 main.ts | 高     |
-| Pinecone 迁移数据丢失  | 迁移前备份所有向量，支持离线导入    | 高     |
+| SQLite 数据文件损坏    | 迁移前备份 `.data/memory.sqlite`    | 高     |
 | LLM JSON 字段漂移      | Zod 运行时校验 + 降级处理           | 中     |
 | 后端 API 不兼容        | 版本控制 (/api/v1/chat) + 兼容层    | 中     |
 
@@ -278,7 +276,7 @@ violet_ai_project/
 
 - [技术栈分析](./REFACTORING_ROADMAP.md)
 - [迁移检查清单](./MIGRATION_CHECKLIST.md)（稍后生成）
-- [Pinecone 集成指南](./docs/PINECONE_SETUP.md)（稍后生成）
+- [向量迁移脚本](./scripts/migrate-vectors.ts)
 
 ---
 

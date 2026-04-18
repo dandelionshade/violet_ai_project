@@ -1,6 +1,6 @@
 /**
  * 向量数据迁移脚本
- * 从本地 VectorDB (JSON) 迁移到 Pinecone
+ * 从本地 VectorDB (JSON) 迁移到 SQLite
  * 
  * 运行方式：
  * npx tsx scripts/migrate-vectors.ts
@@ -10,8 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { PineconeService } from '../server/services/PineconeService';
-import { LLMService } from '../server/services/LLMService';
+import { ServerVectorDB } from '../server/VectorDB';
 
 // 加载环境变量
 dotenv.config({ override: true });
@@ -28,15 +27,14 @@ interface OldMemoryEntry {
 async function migrateVectors() {
   console.log('╔════════════════════════════════════════╗');
   console.log('║  Vector Database Migration Script      ║');
-  console.log('║  JSON → Pinecone                       ║');
+  console.log('║  JSON → SQLite                         ║');
   console.log('╚════════════════════════════════════════╝\n');
 
   try {
-    // ===== 第一步：初始化 Pinecone =====
-    console.log('[1] Initializing Pinecone...');
-    await PineconeService.initialize();
-    await PineconeService.ensureIndexExists();
-    console.log('✓ Pinecone initialized\n');
+    // ===== 第一步：初始化 SQLite =====
+    console.log('[1] Initializing local SQLite vector store...');
+    ServerVectorDB.initialize();
+    console.log('✓ SQLite initialized\n');
 
     // ===== 第二步：扫描本地文件 =====
     console.log('[2] Scanning local JSON files...');
@@ -68,19 +66,10 @@ async function migrateVectors() {
 
         console.log(`  - Found ${memories.length} memories`);
 
-        // 转换为 Pinecone 格式
-        const records = memories.map((m, index) => ({
-          id: `${playerName}-${m.timestamp}`,
-          values: m.embedding,
-          metadata: {
-            playerName,
-            text: m.text,
-            timestamp: m.timestamp,
-          },
-        }));
-
-        // 批量上传
-        await PineconeService.batchUpsert(records);
+        // 逐条写入本地 SQLite
+        for (const memory of memories) {
+          ServerVectorDB.addMemory(playerName, memory.text, memory.embedding);
+        }
         console.log(`  ✓ Migrated ${memories.length} memories\n`);
 
         totalMigrated += memories.length;

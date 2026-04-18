@@ -34,12 +34,12 @@ async function startServer() {
 
   // ===== 初始化服务 =====
   try {
-    console.log('[Init] Initializing memory service (Pinecone)...');
+    console.log('[Init] Initializing memory service (SQLite)...');
     await MemoryService.initialize();
     console.log('[Init] Memory service initialized successfully');
   } catch (error) {
     console.warn('[Init] Memory service initialization failed, continuing:', error);
-    // 如果 Pinecone 初始化失败，继续启动服务器，仅记忆功能不可用
+    // 如果本地向量库初始化失败，继续启动服务器，仅记忆功能不可用
   }
 
   // ===== 路由配置 =====
@@ -86,7 +86,7 @@ Server running at: http://localhost:${PORT}
 Environment:
   - NODE_ENV: ${process.env.NODE_ENV || 'development'}
   - ACTIVE_LLM: ${process.env.ACTIVE_LLM || 'deepseek'}
-  - Pinecone: ${process.env.PINECONE_API_KEY ? 'enabled' : 'disabled'}
+  - Vector DB: local SQLite at .data/memory.sqlite
     `);
   });
 }
