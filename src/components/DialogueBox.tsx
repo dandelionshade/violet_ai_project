@@ -4,16 +4,22 @@
 
 import React from 'react';
 
+import type { Option } from '../types/game';
+
 interface DialogueBoxProps {
   speakerName: string;
   narratorText: string;
   dialogueText: string;
+  nodeTitle: string;
+  nodeObjective: string;
+  nodeType?: 'mainline' | 'branch' | 'recovery' | 'pause' | 'ending' | 'refusal';
+  language: 'zh' | 'ja' | 'en';
   isTyping: boolean;
   onMessageChange: (value: string) => void;
   message: string;
   onSend: () => void;
-  options: string[];
-  onOptionClick: (option: string) => void;
+  options: Option[];
+  onOptionClick: (optionId: string, optionLabel?: string) => void;
   trust: number;
   affection: number;
   isGameOver: boolean;
@@ -28,6 +34,10 @@ const DialogueBox: React.FC<DialogueBoxProps> = ({
   speakerName,
   narratorText,
   dialogueText,
+  nodeTitle,
+  nodeObjective,
+  nodeType,
+  language,
   isTyping,
   onMessageChange,
   message,
@@ -69,26 +79,51 @@ const DialogueBox: React.FC<DialogueBoxProps> = ({
         </div>
       </div>
 
-      <div id="options-area" className="absolute right-[5%] md:right-[8%] bottom-[360px] flex flex-col items-end gap-4 transition-all duration-500 opacity-100 pointer-events-auto z-30 translate-x-0 max-h-[50vh] overflow-y-auto custom-scrollbar pr-4 pb-4 pt-4">
-        {options.map(option => (
-          <button
-            key={option}
-            onClick={() => onOptionClick(option)}
-            className="bg-[#fdfbf7]/95 hover:bg-[#fdfbf7] border border-[#e2d5c5] hover:border-[#c5b39a] text-[#3e3222] px-6 py-4 transition-all duration-300 backdrop-blur-sm text-base md:text-lg tracking-wide shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_0_15px_rgba(197,179,154,0.5)] transform hover:-translate-x-2 font-serif text-right min-w-[250px] max-w-[450px] rounded-sm"
-          >
-            {option}
-          </button>
-        ))}
+      <div id="options-area" className="absolute right-[5%] md:right-[8%] bottom-90 flex flex-col items-end gap-4 transition-all duration-500 opacity-100 pointer-events-auto z-30 translate-x-0 max-h-[50vh] overflow-y-auto custom-scrollbar pr-4 pb-4 pt-4">
+        {options.map(option => {
+          const hintValue = option.metadata && typeof option.metadata === 'object' ? option.metadata.hint : '';
+          const hint = typeof hintValue === 'string'
+            ? hintValue
+            : hintValue && typeof hintValue === 'object'
+              ? String(hintValue[language] ?? hintValue.zh ?? hintValue.en ?? hintValue.ja ?? '')
+              : (typeof option.metadata === 'string' ? option.metadata : '');
+          const disabled = option.metadata && typeof option.metadata === 'object' && option.metadata.disabled === true;
+          return (
+            <OptionButton
+              key={option.id}
+              option={option}
+              hint={hint}
+              disabled={disabled || isInputDisabled}
+              onClick={() => onOptionClick(option.id, option.label)}
+            />
+          );
+        })}
       </div>
 
-      <div id="dialogue-container" className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-[1200px] h-[320px] z-20 transition-all duration-500">
+      <div id="dialogue-container" className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-300 h-80 z-20 transition-all duration-500">
         <div className="w-full h-full bg-[#fdfbf7]/95 backdrop-blur-sm border border-[#e2d5c5] p-8 md:p-10 pb-12 relative flex flex-col shadow-[2px_4px_20px_rgba(0,0,0,0.15)] rounded-sm">
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#3e3222] text-[#f4ebd8] px-8 py-1.5 text-sm font-serif tracking-[0.3em] shadow-md border border-[#5a4a35] uppercase animate-name-tag">
             {speakerName}
           </div>
 
+          {(nodeTitle || nodeObjective) ? (
+            <div className="mt-4 flex flex-col gap-2 border-b border-[#e2d5c5] pb-4">
+              {nodeType ? (
+                <div className="text-[#6b5844] font-sans text-[11px] md:text-xs tracking-[0.35em] uppercase">
+                  {nodeType === 'mainline' ? 'MAINLINE' : nodeType === 'branch' ? 'BRANCH' : nodeType === 'recovery' ? 'RECOVERY' : nodeType === 'pause' ? 'PAUSE' : nodeType === 'ending' ? 'ENDING' : 'REFUSAL'}
+                </div>
+              ) : null}
+              {nodeTitle ? (
+                <div className="text-[#8a6d45] font-serif text-sm md:text-base tracking-[0.25em] uppercase">{nodeTitle}</div>
+              ) : null}
+              {nodeObjective ? (
+                <div className="text-[#3e3222]/70 font-serif text-sm md:text-base leading-[1.9]">{nodeObjective}</div>
+              ) : null}
+            </div>
+          ) : null}
+
           {narratorText ? (
-            <div className="font-serif text-base md:text-lg text-[#3e3222]/60 italic leading-[2.2] mt-2 tracking-wide pr-4 empty:hidden">{narratorText}</div>
+            <div className="font-serif text-base md:text-lg text-[#3e3222]/60 italic leading-[2.2] mt-4 tracking-wide pr-4 empty:hidden">{narratorText}</div>
           ) : null}
 
           <div id="dialogue-text" className={`font-serif text-lg md:text-xl text-[#3e3222] leading-[2.2] flex-1 overflow-y-auto custom-scrollbar mt-2 tracking-wide pr-4 ${isTyping ? 'cursor' : ''}`}>
@@ -149,3 +184,29 @@ const DialogueBox: React.FC<DialogueBoxProps> = ({
 };
 
 export default DialogueBox;
+
+// Small subcomponent for option with click feedback and optional hint tag
+const OptionButton: React.FC<{ option: Option; hint?: string; disabled?: boolean; onClick: () => void }> = ({ option, hint, disabled, onClick }) => {
+  const [pressed, setPressed] = React.useState(false);
+
+  const handleClick = () => {
+    if (disabled) return;
+    setPressed(true);
+    onClick();
+    window.setTimeout(() => setPressed(false), 320);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={disabled}
+      aria-disabled={disabled}
+      className={`bg-[#fdfbf7]/95 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#fdfbf7] hover:border-[#c5b39a]'} border border-[#e2d5c5] text-[#3e3222] px-6 py-4 transition-all duration-200 backdrop-blur-sm text-base md:text-lg tracking-wide shadow-[0_4px_15px_rgba(0,0,0,0.05)] transform ${pressed ? 'translate-x-2 scale-[0.995] shadow-[0_0_6px_rgba(0,0,0,0.12)]' : 'hover:-translate-x-2 hover:shadow-[0_0_15px_rgba(197,179,154,0.5)]'} font-serif text-right min-w-62.5 max-w-112.5 rounded-sm`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 text-left">{option.label}</div>
+        {hint ? <div className="ml-4 text-xs text-[#6b5844] font-sans bg-[#fff6e8] border border-[#e6d9c4] px-2 py-1 rounded">{hint}</div> : null}
+      </div>
+    </button>
+  );
+};

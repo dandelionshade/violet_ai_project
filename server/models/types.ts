@@ -13,10 +13,10 @@ export interface GameState {
   reply_ja?: string;
   reply_zh?: string;
   reply_en?: string;
-  suggested_options: string[];
-  suggested_options_ja?: string[];
-  suggested_options_zh?: string[];
-  suggested_options_en?: string[];
+  suggested_options: Option[];
+  suggested_options_ja?: Option[];
+  suggested_options_zh?: Option[];
+  suggested_options_en?: Option[];
   isGameOver: boolean;
   gameOverType?: string;
   ready_to_draft?: boolean;
@@ -25,6 +25,13 @@ export interface GameState {
   narrator_text_zh?: string;
   narrator_text_ja?: string;
   narrator_text_en?: string;
+  storyNodeTitle_zh?: string;
+  storyNodeTitle_ja?: string;
+  storyNodeTitle_en?: string;
+  storyNodeObjective_zh?: string;
+  storyNodeObjective_ja?: string;
+  storyNodeObjective_en?: string;
+  storyNodeType?: 'mainline' | 'branch' | 'recovery' | 'pause' | 'ending' | 'refusal';
   playerName?: string;
   trust: number;
   affection: number;
@@ -39,9 +46,9 @@ export interface LLMResponse {
   reply_zh: string;
   reply_en: string;
   emotion: string;
-  suggested_options_ja: string[];
-  suggested_options_zh: string[];
-  suggested_options_en: string[];
+  suggested_options_ja: Option[];
+  suggested_options_zh: Option[];
+  suggested_options_en: Option[];
   resonance_change: number;
   favorability_change: number;
   ready_to_draft: boolean;
@@ -53,6 +60,7 @@ export interface LLMResponse {
 export interface ChatRequest {
   message: string;
   reset?: boolean;
+  selected_option_id?: string;
   state: GameState;
 }
 
@@ -63,8 +71,24 @@ export interface ChatResponse extends LLMResponse {
   gameOverType: string;
   turn_count: number;
   storyPhase: number;
+  storyNodeTitle_zh?: string;
+  storyNodeTitle_ja?: string;
+  storyNodeTitle_en?: string;
+  storyNodeObjective_zh?: string;
+  storyNodeObjective_ja?: string;
+  storyNodeObjective_en?: string;
+  storyNodeType?: 'mainline' | 'branch' | 'recovery' | 'pause' | 'ending' | 'refusal';
   chatHistory: any[];
   openAiHistory: any[];
+}
+
+export interface Option {
+  id: string;
+  label: string;
+  next_phase?: number | null;
+  trust_delta?: number;
+  affection_delta?: number;
+  metadata?: Record<string, any> | string;
 }
 
 export interface MemoryEntry {

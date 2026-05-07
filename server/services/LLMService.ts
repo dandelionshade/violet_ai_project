@@ -6,7 +6,7 @@
 
 import { GoogleGenAI, Type } from '@google/genai';
 import OpenAI from 'openai';
-import type { LLMResponse } from '../models/types';
+import type { LLMResponse, Option } from '../models/types';
 
 export class LLMService {
   private static gemini: GoogleGenAI | null = null;
@@ -49,18 +49,48 @@ export class LLMService {
         },
         suggested_options_ja: {
           type: Type.ARRAY,
-          items: { type: Type.STRING },
-          description: '2-3个供玩家选择的日文回复选项',
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING, description: '选项的稳定ID' },
+              label: { type: Type.STRING, description: '按钮显示文本' },
+              next_phase: { type: Type.INTEGER, description: '可选，下一个剧情阶段' },
+              trust_delta: { type: Type.INTEGER, description: '可选，信任变化' },
+              affection_delta: { type: Type.INTEGER, description: '可选，好感变化' },
+            },
+            required: ['id', 'label'],
+          },
+          description: '2-3个供玩家选择的日文回复选项（对象数组）',
         },
         suggested_options_zh: {
           type: Type.ARRAY,
-          items: { type: Type.STRING },
-          description: '2-3个供玩家选择的中文回复选项',
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING, description: '选项的稳定ID' },
+              label: { type: Type.STRING, description: '按钮显示文本' },
+              next_phase: { type: Type.INTEGER, description: '可选，下一个剧情阶段' },
+              trust_delta: { type: Type.INTEGER, description: '可选，信任变化' },
+              affection_delta: { type: Type.INTEGER, description: '可选，好感变化' },
+            },
+            required: ['id', 'label'],
+          },
+          description: '2-3个供玩家选择的中文回复选项（对象数组）',
         },
         suggested_options_en: {
           type: Type.ARRAY,
-          items: { type: Type.STRING },
-          description: '2-3个供玩家选择的英文回复选项',
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING, description: '选项的稳定ID' },
+              label: { type: Type.STRING, description: '按钮显示文本' },
+              next_phase: { type: Type.INTEGER, description: '可选，下一个剧情阶段' },
+              trust_delta: { type: Type.INTEGER, description: '可选，信任变化' },
+              affection_delta: { type: Type.INTEGER, description: '可选，好感变化' },
+            },
+            required: ['id', 'label'],
+          },
+          description: '2-3个供玩家选择的英文回复选项（对象数组）',
         },
         resonance_change: {
           type: Type.INTEGER,
@@ -183,9 +213,38 @@ export class LLMService {
   private static normalizeResponse(response: any, userMessage: string): LLMResponse {
     const fallbackReply = userMessage?.trim() ? `我明白了。关于「${userMessage.trim()}」，我会继续倾听。` : '我明白了。请继续。';
 
-    const normalizeOptions = (value: unknown): string[] => {
+    const normalizeOptions = (value: unknown): Option[] => {
       if (!Array.isArray(value)) return [];
-      return value.filter(item => typeof item === 'string').slice(0, 3);
+      return value.slice(0, 3).map((item: unknown, index: number) => {
+        if (typeof item === 'string') {
+          const label = item.trim();
+          return {
+            id: label ? label.replace(/\s+/g, '_') : `opt_${index + 1}`,
+            label,
+          };
+        }
+
+        if (item && typeof item === 'object') {
+          const candidate = item as Partial<Option>;
+          const label = typeof candidate.label === 'string' ? candidate.label : String(candidate.id ?? '').trim();
+          return {
+            id: typeof candidate.id === 'string' && candidate.id.trim() ? candidate.id : (label ? label.replace(/\s+/g, '_') : `opt_${index + 1}`),
+            label,
+            next_phase: typeof candidate.next_phase === 'number' ? candidate.next_phase : null,
+            trust_delta: typeof candidate.trust_delta === 'number' ? candidate.trust_delta : 0,
+            affection_delta: typeof candidate.affection_delta === 'number' ? candidate.affection_delta : 0,
+            metadata: candidate.metadata,
+          };
+        }
+
+        return {
+          id: `opt_${index + 1}`,
+          label: '',
+          next_phase: null,
+          trust_delta: 0,
+          affection_delta: 0,
+        };
+      });
     };
 
     const toNumber = (value: unknown, fallback: number): number => {

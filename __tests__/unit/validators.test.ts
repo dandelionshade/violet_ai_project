@@ -23,6 +23,21 @@ test('validateChatRequest should accept valid payload', () => {
   assert.equal(result.ok, true);
 });
 
+test('validateChatRequest should reject non-numeric state fields', () => {
+  const result = validateChatRequest({
+    message: 'hello',
+    state: {
+      turn_count: '1',
+      storyPhase: 1,
+      trust: 10,
+      affection: 10,
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(result.error || '', /numeric/i);
+});
+
 test('validateTTSRequest should reject empty text', () => {
   const result = validateTTSRequest({ text: '   ' });
   assert.equal(result.ok, false);

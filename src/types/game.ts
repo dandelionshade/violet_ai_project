@@ -19,11 +19,21 @@ export interface GameState {
   reply_zh?: string;
   reply_en?: string;
   
-  // 选项
-  suggested_options: string[];
-  suggested_options_ja?: string[];
-  suggested_options_zh?: string[];
-  suggested_options_en?: string[];
+  // 选项（兼容：元素可以是字符串或对象）
+  suggested_options: Option[];
+  suggested_options_ja?: Option[];
+  suggested_options_zh?: Option[];
+  suggested_options_en?: Option[];
+  
+  // 节点元信息
+  storyNodeTitle_zh?: string;
+  storyNodeTitle_ja?: string;
+  storyNodeTitle_en?: string;
+  storyNodeObjective_zh?: string;
+  storyNodeObjective_ja?: string;
+  storyNodeObjective_en?: string;
+  storyNodeType?: 'mainline' | 'branch' | 'recovery' | 'pause' | 'ending' | 'refusal';
+  storyNodeType?: 'mainline' | 'branch' | 'recovery' | 'pause' | 'ending' | 'refusal';
   
   // 游戏逻辑状态
   isGameOver: boolean;
@@ -65,4 +75,13 @@ export interface PlayerMemory {
   summary: string;
   lastTrust: number;
   unlockedNGPlus: boolean;
+}
+
+export interface Option {
+  id: string;
+  label: string;
+  next_phase?: number | null;
+  trust_delta?: number;
+  affection_delta?: number;
+  metadata?: Record<string, any> | string;
 }

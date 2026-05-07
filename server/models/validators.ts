@@ -16,6 +16,7 @@ export function validateChatRequest(input: unknown): ValidationResult<ChatReques
   }
 
   const { message, state, reset } = input;
+  const selected_option_id = (input as any).selected_option_id;
 
   if (typeof message !== 'string' || message.trim().length === 0) {
     return { ok: false, error: 'message must be a non-empty string' };
@@ -31,14 +32,28 @@ export function validateChatRequest(input: unknown): ValidationResult<ChatReques
     return { ok: false, error: 'state is missing required fields' };
   }
 
+  const requiredNumericStateKeys = ['turn_count', 'storyPhase', 'trust', 'affection'];
+  const hasInvalidNumericState = requiredNumericStateKeys.some(key => {
+    const value = (state as Record<string, unknown>)[key];
+    return typeof value !== 'number' || !Number.isFinite(value);
+  });
+  if (hasInvalidNumericState) {
+    return { ok: false, error: 'state numeric fields must be finite numbers' };
+  }
+
   if (typeof reset !== 'undefined' && typeof reset !== 'boolean') {
     return { ok: false, error: 'reset must be a boolean when provided' };
+  }
+
+  if (typeof selected_option_id !== 'undefined' && typeof selected_option_id !== 'string') {
+    return { ok: false, error: 'selected_option_id must be a string when provided' };
   }
 
   const chatRequest: ChatRequest = {
     message,
     state: state as unknown as ChatRequest['state'],
     reset: typeof reset === 'boolean' ? reset : undefined,
+    selected_option_id: typeof selected_option_id === 'string' ? selected_option_id : undefined,
   };
 
   return { ok: true, data: chatRequest };

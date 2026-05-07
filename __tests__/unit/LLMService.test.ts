@@ -8,9 +8,9 @@ function baseResponse() {
     reply_zh: 'zh',
     reply_en: 'en',
     emotion: 'neutral',
-    suggested_options_ja: ['a'],
-    suggested_options_zh: ['b'],
-    suggested_options_en: ['c'],
+    suggested_options_ja: [{ id: 'a', label: 'a' }],
+    suggested_options_zh: [{ id: 'b', label: 'b' }],
+    suggested_options_en: [{ id: 'c', label: 'c' }],
     resonance_change: 1,
     favorability_change: 2,
     ready_to_draft: false,
@@ -30,7 +30,11 @@ test('LLMService normalize should fallback on invalid shape', () => {
 
   assert.match(normalized.reply_zh, /测试消息/);
   assert.equal(normalized.emotion, 'neutral');
-  assert.deepEqual(normalized.suggested_options_ja, ['ok']);
+  assert.deepEqual(normalized.suggested_options_ja, [
+    { id: 'opt_1', label: '', next_phase: null, trust_delta: 0, affection_delta: 0 },
+    { id: 'ok', label: 'ok' },
+    { id: 'opt_3', label: '', next_phase: null, trust_delta: 0, affection_delta: 0 },
+  ]);
   assert.equal(normalized.resonance_change, 0);
 });
 

@@ -76,9 +76,9 @@ test('POST /api/chat should progress state with mocked LLM response', async () =
     reply_zh: '你好',
     reply_en: 'hello',
     emotion: 'neutral',
-    suggested_options_ja: ['はい'],
-    suggested_options_zh: ['好'],
-    suggested_options_en: ['ok'],
+    suggested_options_ja: [ { id: 'ja1', label: 'はい', next_phase: 2, trust_delta: 1, affection_delta: 1 } ],
+    suggested_options_zh: [ { id: 'zh1', label: '好', next_phase: 2, trust_delta: 1, affection_delta: 1 } ],
+    suggested_options_en: [ { id: 'en1', label: 'ok', next_phase: 2, trust_delta: 1, affection_delta: 1 } ],
     resonance_change: 1,
     favorability_change: 2,
     ready_to_draft: false,
@@ -88,6 +88,7 @@ test('POST /api/chat should progress state with mocked LLM response', async () =
   try {
     const res = await request(app).post('/api/chat').send({
       message: '测试消息',
+      selected_option_id: 'zh1',
       state: {
         turn_count: 1,
         storyPhase: 1,

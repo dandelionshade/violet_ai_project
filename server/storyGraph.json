@@ -1,0 +1,515 @@
+{
+  "version": 2,
+  "startPhase": 1,
+  "nodes": [
+    {
+      "phase": 1,
+      "title": { "zh": "初次问候", "ja": "初回の挨拶", "en": "Greeting" },
+      "objective": { "zh": "确认玩家需求并进入代笔流程。", "ja": "依頼内容を確認し、代筆の流れへ入る。", "en": "Confirm the player's request and enter the letter workflow." },
+      "fallbackTo": 2,
+      "options": [
+        {
+          "id": "phase_1_opt_1",
+          "label": { "zh": "我想写一封信。", "ja": "手紙を書きたいです。", "en": "I want to write a letter." },
+          "targetPhase": 2,
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "进入写信流程", "ja": "手紙の流れへ進む", "en": "enter letter workflow" } }
+        },
+        {
+          "id": "phase_1_opt_2",
+          "label": { "zh": "我有些烦恼想倾诉。", "ja": "少し悩みを聞いてほしい。", "en": "I have some troubles to share." },
+          "targetPhase": 2,
+          "effects": { "trust_delta": 1, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "先说烦恼", "ja": "悩みを先に話す", "en": "share troubles first" } }
+        },
+        {
+          "id": "phase_1_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["always"], "to": 2 }
+      ]
+    },
+    {
+      "phase": 2,
+      "title": { "zh": "初步倾听", "ja": "初期の傾聴", "en": "Initial Listening" },
+      "objective": { "zh": "收集烦恼与基本方向。", "ja": "悩みと基本方針を集める。", "en": "Collect the trouble and the basic direction." },
+      "fallbackTo": 3,
+      "options": [
+        {
+          "id": "phase_2_opt_1",
+          "label": { "zh": "继续说下去。", "ja": "続きを話します。", "en": "Keep talking." },
+          "targetPhase": 3,
+          "effects": { "trust_delta": 1, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "继续倾诉", "ja": "続けて相談", "en": "continue sharing" } }
+        },
+        {
+          "id": "phase_2_opt_2",
+          "label": { "zh": "我想先问你一个问题。", "ja": "先に一つ質問したいです。", "en": "I want to ask you something first." },
+          "targetPhase": 3,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "先反问", "ja": "先に問い返す", "en": "ask first" } }
+        },
+        {
+          "id": "phase_2_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["always"], "to": 3 }
+      ]
+    },
+    {
+      "phase": 3,
+      "title": { "zh": "深入共情", "ja": "深い共感", "en": "Deepening" },
+      "objective": { "zh": "挖掘核心情感并判断是否进入起草。", "ja": "核心の感情を掘り下げ、起草へ進めるか判断する。", "en": "Uncover the core emotion and decide whether to draft." },
+      "fallbackTo": 3,
+      "options": [
+        {
+          "id": "phase_3_opt_1",
+          "label": { "zh": "收件人是谁？", "ja": "宛先は誰ですか？", "en": "Who is the recipient?" },
+          "targetPhase": 4,
+          "effects": { "trust_delta": 1, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "确认对象", "ja": "相手を確認", "en": "confirm recipient" } }
+        },
+        {
+          "id": "phase_3_opt_2",
+          "label": { "zh": "请写下那件最重要的事。", "ja": "一番大切なことを書いてください。", "en": "Write down the most important thing." },
+          "targetPhase": 5,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "抓核心", "ja": "核心を掴む", "en": "focus on core detail" } }
+        },
+        {
+          "id": "phase_3_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        },
+        {
+          "id": "phase_3_opt_4",
+          "label": { "zh": "我想谈谈少佐。", "ja": "少佐のことを話したい。", "en": "I want to talk about the Major." },
+          "targetPhase": 10,
+          "effects": { "trust_delta": 2, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "进入支线", "ja": "サイドルート", "en": "side route" } }
+        },
+        {
+          "id": "phase_3_opt_5",
+          "label": { "zh": "刚才是我太急了。", "ja": "少し急ぎすぎました。", "en": "I was too abrupt just now." },
+          "targetPhase": 13,
+          "effects": { "trust_delta": -2, "affection_delta": -1 },
+          "metadata": { "hint": { "zh": "降温", "ja": "クールダウン", "en": "cool down" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["refusal"], "to": 9, "isGameOver": true, "gameOverType": "refusal" },
+        { "when": ["trust_lte:4"], "to": 15 },
+        { "when": ["affection_lte:20"], "to": 15 },
+        { "when": ["ready_to_draft"], "to": 4 }
+      ]
+    },
+    {
+      "phase": 4,
+      "title": { "zh": "确认收件人", "ja": "宛先の確認", "en": "Confirm Recipient" },
+      "objective": { "zh": "明确收件人身份与关系。", "ja": "宛先の人物と関係性を明確にする。", "en": "Clarify the recipient's identity and relationship." },
+      "fallbackTo": 5,
+      "options": [
+        {
+          "id": "phase_4_opt_1",
+          "label": { "zh": "先说明收件人的身份。", "ja": "まず相手の立場を教えてください。", "en": "First explain who the recipient is." },
+          "targetPhase": 5,
+          "effects": { "trust_delta": 1, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "身份", "ja": "相手の立場", "en": "recipient identity" } }
+        },
+        {
+          "id": "phase_4_opt_2",
+          "label": { "zh": "我和对方是什么关系？", "ja": "相手との関係は？", "en": "What is my relationship to the other person?" },
+          "targetPhase": 5,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "关系", "ja": "関係", "en": "relationship" } }
+        },
+        {
+          "id": "phase_4_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["trust_lte:2"], "to": 13 },
+        { "when": ["affection_lte:12"], "to": 13 },
+        { "when": ["always"], "to": 5 }
+      ]
+    },
+    {
+      "phase": 5,
+      "title": { "zh": "核心记忆", "ja": "核心の記憶", "en": "Core Memory" },
+      "objective": { "zh": "确认信物、回忆或最重要的信息。", "ja": "信物、記憶、最重要の情報を確認する。", "en": "Confirm the relic, memory, or most important information." },
+      "fallbackTo": 6,
+      "options": [
+        {
+          "id": "phase_5_opt_1",
+          "label": { "zh": "请保留那件最重要的回忆。", "ja": "一番大切な記憶を残してください。", "en": "Please keep the most important memory." },
+          "targetPhase": 6,
+          "effects": { "trust_delta": 1, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "记忆", "ja": "記憶", "en": "memory" } }
+        },
+        {
+          "id": "phase_5_opt_2",
+          "label": { "zh": "我想提到一件象征物。", "ja": "象徴となる物を伝えたい。", "en": "I want to mention a symbol." },
+          "targetPhase": 6,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "意象", "ja": "象徴", "en": "symbol" } }
+        },
+        {
+          "id": "phase_5_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        },
+        {
+          "id": "phase_5_opt_4",
+          "label": { "zh": "我想再谈谈那件信物。", "ja": "あの持ち物について話したい。", "en": "I want to talk about that relic again." },
+          "targetPhase": 11,
+          "effects": { "trust_delta": 0, "affection_delta": 2 },
+          "metadata": { "hint": { "zh": "进入支线", "ja": "サイドルート", "en": "side route" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["always"], "to": 6 }
+      ]
+    },
+    {
+      "phase": 6,
+      "title": { "zh": "确认风格", "ja": "文体の確認", "en": "Confirm Style" },
+      "objective": { "zh": "锁定信件语气与写法。", "ja": "手紙の口調と書き方を固める。", "en": "Lock in the letter's tone and style." },
+      "fallbackTo": 7,
+      "options": [
+        {
+          "id": "phase_6_opt_1",
+          "label": { "zh": "正式一点。", "ja": "少し正式に。", "en": "Make it formal." },
+          "targetPhase": 7,
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "正式", "ja": "正式", "en": "formal" } }
+        },
+        {
+          "id": "phase_6_opt_2",
+          "label": { "zh": "温暖一点。", "ja": "少し温かく。", "en": "Make it warmer." },
+          "targetPhase": 7,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "温柔", "ja": "温かい", "en": "warm" } }
+        },
+        {
+          "id": "phase_6_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        },
+        {
+          "id": "phase_6_opt_4",
+          "label": { "zh": "我想重新斟酌语气。", "ja": "語り口を見直したい。", "en": "I want to reconsider the tone." },
+          "targetPhase": 12,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "进入支线", "ja": "サイドルート", "en": "side route" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["always"], "to": 7 }
+      ]
+    },
+    {
+      "phase": 7,
+      "title": { "zh": "交付信件", "ja": "手紙の引き渡し", "en": "Delivery" },
+      "objective": { "zh": "生成信件正文并准备结局。", "ja": "本文を生成し、結末へ備える。", "en": "Generate the letter body and prepare the ending." },
+      "fallbackTo": 8,
+      "options": [
+        {
+          "id": "phase_7_opt_1",
+          "label": { "zh": "我已经明白了。", "ja": "もう理解しました。", "en": "I understand now." },
+          "targetPhase": 8,
+          "isGameOver": true,
+          "gameOverType": "resolve_ending_type",
+          "effects": { "trust_delta": 1, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "完成", "ja": "完了", "en": "complete" } }
+        },
+        {
+          "id": "phase_7_opt_2",
+          "label": { "zh": "请替我再读一遍。", "ja": "もう一度読んでください。", "en": "Please read it once more." },
+          "targetPhase": 8,
+          "isGameOver": true,
+          "gameOverType": "resolve_ending_type",
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "回看", "ja": "再確認", "en": "review" } }
+        },
+        {
+          "id": "phase_7_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        {
+          "when": ["always"],
+          "to": 8,
+          "isGameOver": true,
+          "gameOverType": "resolve_ending_type"
+        }
+      ]
+    },
+    {
+      "phase": 8,
+      "title": { "zh": "告别", "ja": "別れの挨拶", "en": "Farewell" },
+      "objective": { "zh": "完成最后告别并收束故事。", "ja": "最後の別れを済ませ、物語を収束させる。", "en": "Complete the farewell and close the story." },
+      "fallbackTo": 8,
+      "options": [],
+      "transitions": []
+    },
+    {
+      "phase": 9,
+      "title": { "zh": "拒绝服务", "ja": "依頼拒否", "en": "Refusal" },
+      "objective": { "zh": "礼貌拒绝不当请求并结束对话。", "ja": "不適切な依頼を丁寧に断って会話を終了する。", "en": "Politely refuse inappropriate requests and end the conversation." },
+      "fallbackTo": 9,
+      "options": [],
+      "transitions": []
+    },
+    {
+      "phase": 10,
+      "title": { "zh": "少佐回忆", "ja": "少佐の記憶", "en": "Major's Memory" },
+      "objective": { "zh": "围绕少佐回忆展开，并回流主线。", "ja": "少佐の記憶を掘り下げつつ本筋へ戻る。", "en": "Explore the Major's memory and flow back to the main line." },
+      "fallbackTo": 10,
+      "options": [
+        {
+          "id": "phase_10_opt_1",
+          "label": { "zh": "继续谈少佐。", "ja": "少佐の話を続ける。", "en": "Keep talking about the Major." },
+          "targetPhase": 10,
+          "effects": { "trust_delta": 1, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "回忆", "ja": "記憶", "en": "memory" } }
+        },
+        {
+          "id": "phase_10_opt_2",
+          "label": { "zh": "回到写信。", "ja": "手紙に戻る。", "en": "Return to the letter." },
+          "targetPhase": 4,
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "返回主线", "ja": "本筋に戻る", "en": "return to main line" } }
+        },
+        {
+          "id": "phase_10_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["ready_to_draft"], "to": 4 },
+        { "when": ["trust_gte:7"], "to": 4 }
+      ]
+    },
+    {
+      "phase": 11,
+      "title": { "zh": "信物回响", "ja": "信物の余韻", "en": "Relic Echo" },
+      "objective": { "zh": "围绕信物的意义展开，并回流主线。", "ja": "信物の意味を掘り下げつつ本筋へ戻る。", "en": "Explore the meaning of the relic and return to the main line." },
+      "fallbackTo": 11,
+      "options": [
+        {
+          "id": "phase_11_opt_1",
+          "label": { "zh": "再看一眼信物。", "ja": "もう一度、その物を見たい。", "en": "Look at the relic once more." },
+          "targetPhase": 11,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "凝视", "ja": "見つめる", "en": "observe" } }
+        },
+        {
+          "id": "phase_11_opt_2",
+          "label": { "zh": "回到信件正文。", "ja": "本文に戻る。", "en": "Return to the letter body." },
+          "targetPhase": 5,
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "返回主线", "ja": "本筋に戻る", "en": "return to main line" } }
+        },
+        {
+          "id": "phase_11_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["affection_gte:60"], "to": 5 },
+        { "when": ["ready_to_draft"], "to": 5 }
+      ]
+    },
+    {
+      "phase": 12,
+      "title": { "zh": "风格加深", "ja": "文体の深掘り", "en": "Style Deepening" },
+      "objective": { "zh": "细化信件语气并回流交付阶段。", "ja": "手紙の口調を細かく調整し、引き渡し段階へ戻る。", "en": "Refine the letter tone and return to the delivery stage." },
+      "fallbackTo": 12,
+      "options": [
+        {
+          "id": "phase_12_opt_1",
+          "label": { "zh": "再温柔一点。", "ja": "もう少し柔らかく。", "en": "Make it gentler." },
+          "targetPhase": 12,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "温柔", "ja": "やさしく", "en": "gentle" } }
+        },
+        {
+          "id": "phase_12_opt_2",
+          "label": { "zh": "回到交付阶段。", "ja": "引き渡しに戻る。", "en": "Return to delivery." },
+          "targetPhase": 7,
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "返回主线", "ja": "本筋に戻る", "en": "return to main line" } }
+        },
+        {
+          "id": "phase_12_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["ready_to_draft"], "to": 7 },
+        { "when": ["affection_gte:70"], "to": 7 }
+      ]
+    },
+    {
+      "phase": 13,
+      "title": { "zh": "关系降温", "ja": "距離を置く", "en": "Cooling Off" },
+      "objective": { "zh": "先承认追问过急，给双方一个缓冲，再把对话拉回可继续的状态。", "ja": "追い込みすぎたことを認め、呼吸を整えて会話を続けられる状態に戻す。", "en": "Acknowledge the pressure, create breathing room, and restore a state where the conversation can continue." },
+      "fallbackTo": 13,
+      "options": [
+        {
+          "id": "phase_13_opt_1",
+          "label": { "zh": "刚才是我太急了，请让我重新问。", "ja": "先ほどは急ぎすぎました。言い直させてください。", "en": "I was too abrupt. Please let me ask again." },
+          "targetPhase": 14,
+          "effects": { "trust_delta": 1, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "挽回", "ja": "立て直し", "en": "repair" } }
+        },
+        {
+          "id": "phase_13_opt_2",
+          "label": { "zh": "我先退一步，您慢慢说。", "ja": "一歩下がります。ゆっくりお話しください。", "en": "I will step back. Please take your time." },
+          "targetPhase": 14,
+          "effects": { "trust_delta": 1, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "缓和", "ja": "緩和", "en": "ease tension" } }
+        },
+        {
+          "id": "phase_13_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["trust_gte:4"], "to": 14 },
+        { "when": ["affection_gte:18"], "to": 14 }
+      ]
+    },
+    {
+      "phase": 15,
+      "title": { "zh": "轻微冷场", "ja": "少し間が空く", "en": "Brief Pause" },
+      "objective": { "zh": "当对话略显生硬时，先放慢节奏并用更轻的方式重开话题。", "ja": "会話が少し硬くなったら、まず間を置いて話題をやわらかく戻す。", "en": "When the conversation turns stiff, slow down and reopen the topic more gently." },
+      "fallbackTo": 15,
+      "options": [
+        {
+          "id": "phase_15_opt_1",
+          "label": { "zh": "我换一种问法。", "ja": "別の聞き方にします。", "en": "I will ask this another way." },
+          "targetPhase": 3,
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "缓一下", "ja": "間を置く", "en": "pause" } }
+        },
+        {
+          "id": "phase_15_opt_2",
+          "label": { "zh": "如果不方便，可以先不回答。", "ja": "難しければ、今は答えなくて構いません。", "en": "If this is difficult, you do not have to answer yet." },
+          "targetPhase": 13,
+          "effects": { "trust_delta": 1, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退一步", "ja": "一歩引く", "en": "step back" } }
+        },
+        {
+          "id": "phase_15_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["trust_lte:1"], "to": 13 },
+        { "when": ["affection_lte:8"], "to": 13 },
+        { "when": ["trust_gte:5"], "to": 3 },
+        { "when": ["affection_gte:16"], "to": 3 }
+      ]
+    },
+    {
+      "phase": 14,
+      "title": { "zh": "重新建立节奏", "ja": "呼吸を整える", "en": "Rebuild the Rhythm" },
+      "objective": { "zh": "把降温后的对话重新导回主线，恢复继续写信的节奏。", "ja": "落ち着いた会話を本筋へ戻し、手紙を書く流れを取り戻す。", "en": "Guide the cooled-down exchange back to the main line and restore the letter-writing flow." },
+      "fallbackTo": 14,
+      "options": [
+        {
+          "id": "phase_14_opt_1",
+          "label": { "zh": "我们从收件人重新开始。", "ja": "宛先からもう一度始めましょう。", "en": "Let us start again from the recipient." },
+          "targetPhase": 4,
+          "effects": { "trust_delta": 1, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "回到主线", "ja": "本筋へ", "en": "return main line" } }
+        },
+        {
+          "id": "phase_14_opt_2",
+          "label": { "zh": "请继续刚才的话题。", "ja": "先ほどの話を続けてください。", "en": "Please continue from where we left off." },
+          "targetPhase": 3,
+          "effects": { "trust_delta": 0, "affection_delta": 1 },
+          "metadata": { "hint": { "zh": "继续", "ja": "続行", "en": "continue" } }
+        },
+        {
+          "id": "phase_14_opt_3",
+          "label": { "zh": "离开邮局", "ja": "郵便局を出る", "en": "Leave the post office" },
+          "targetPhase": 9,
+          "isGameOver": true,
+          "gameOverType": "refusal",
+          "effects": { "trust_delta": 0, "affection_delta": 0 },
+          "metadata": { "hint": { "zh": "退出", "ja": "終了", "en": "exit" } }
+        }
+      ],
+      "transitions": [
+        { "when": ["ready_to_draft"], "to": 4 },
+        { "when": ["trust_gte:5"], "to": 3 },
+        { "when": ["affection_gte:22"], "to": 3 }
+      ]
+    }
+  ]
+}

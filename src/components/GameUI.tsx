@@ -5,7 +5,7 @@
 
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import type { GameState } from '../types/game';
+import type { GameState, Option } from '../types/game';
 import SaveLoadModal from './SaveLoadModal';
 import ArchiveModal from './ArchiveModal';
 import DialogueBox from './DialogueBox';
@@ -22,9 +22,6 @@ type ChatResponseLike = Partial<GameState> & {
   reply_zh?: string;
   reply_ja?: string;
   reply_en?: string;
-  suggested_options_zh?: string[];
-  suggested_options_ja?: string[];
-  suggested_options_en?: string[];
   resonance_change?: number;
   favorability_change?: number;
   memory_summary?: string;
@@ -47,13 +44,24 @@ function getLocalizedText(
   return state.reply_en || state.reply || fallback;
 }
 
+function normalizeOption(o: any, index: number, storyPhase: number) {
+  if (!o) return null;
+  const fallbackId = `phase_${storyPhase}_opt_${index + 1}`;
+  if (typeof o === 'string') return { id: fallbackId, label: o };
+  if (typeof o === 'object') return { id: String(o.id ?? fallbackId), label: String(o.label ?? o.id ?? '') , next_phase: o.next_phase, trust_delta: o.trust_delta, affection_delta: o.affection_delta, metadata: o.metadata };
+  return null;
+}
+
 function getLocalizedOptions(
   state: GameState,
   language: 'zh' | 'ja' | 'en'
 ) {
-  if (language === 'zh') return state.suggested_options_zh || state.suggested_options || [];
-  if (language === 'ja') return state.suggested_options_ja || state.suggested_options || [];
-  return state.suggested_options_en || state.suggested_options || [];
+  let raw: any[] = [];
+  if (language === 'zh') raw = state.suggested_options_zh || state.suggested_options || [];
+  else if (language === 'ja') raw = state.suggested_options_ja || state.suggested_options || [];
+  else raw = state.suggested_options_en || state.suggested_options || [];
+
+  return raw.map((option, index) => normalizeOption(option, index, state.storyPhase)).filter(Boolean) as { id: string; label: string }[];
 }
 
 function getLocalizedNarrator(
@@ -63,6 +71,35 @@ function getLocalizedNarrator(
   if (language === 'zh') return state.narrator_text_zh || '';
   if (language === 'ja') return state.narrator_text_ja || '';
   return state.narrator_text_en || '';
+}
+
+function getLocalizedNodePresentation(
+  state: GameState,
+  language: 'zh' | 'ja' | 'en'
+) {
+  if (language === 'zh') {
+    return {
+      title: state.storyNodeTitle_zh || '',
+      objective: state.storyNodeObjective_zh || '',
+      nodeType: state.storyNodeType,
+    };
+  }
+  if (language === 'ja') {
+    return {
+      title: state.storyNodeTitle_ja || '',
+      objective: state.storyNodeObjective_ja || '',
+      nodeType: state.storyNodeType,
+    };
+  }
+  return {
+    title: state.storyNodeTitle_en || '',
+    objective: state.storyNodeObjective_en || '',
+    nodeType: state.storyNodeType,
+  };
+}
+
+function buildOption(id: string, label: string): Option {
+  return { id, label };
 }
 
 function createOpeningState(isNGPlus: boolean, affection: number): Partial<GameState> {
@@ -82,12 +119,36 @@ function createOpeningState(isNGPlus: boolean, affection: number): Partial<GameS
     reply: hasHighAffinity
       ? '如果客户有要求，无论身在何处都会赶来。自动手记人偶服务，薇尔莉特·伊芙加登。……啊，是您。很高兴能再次见到您。请问今天有什么我可以为您效劳的吗？'
       : '如果客户有要求，无论身在何处都会赶来。自动手记人偶服务，薇尔莉特·伊芙加登。请问，您有什么需要代笔的信件或烦恼吗？',
-    suggested_options_zh: ['我想写一封信。', '我有些烦恼想倾诉。', '离开邮局'],
-    suggested_options_ja: ['手紙を書きたいです。', '少し悩みを聞いてほしい。', '郵便局を出る'],
-    suggested_options_en: ['I want to write a letter.', 'I have some troubles to share.', 'Leave the post office'],
-    suggested_options: ['我想写一封信。', '我有些烦恼想倾诉。', '离开邮局'],
+    suggested_options_zh: [
+      buildOption('phase_2_opt_1', '继续说下去。'),
+      buildOption('phase_2_opt_2', '我想先问你一个问题。'),
+      buildOption('phase_2_opt_3', '离开邮局'),
+    ],
+    suggested_options_ja: [
+      buildOption('phase_2_opt_1', '続きを話します。'),
+      buildOption('phase_2_opt_2', '先に一つ質問したいです。'),
+      buildOption('phase_2_opt_3', '郵便局を出る'),
+    ],
+    suggested_options_en: [
+      buildOption('phase_2_opt_1', 'Keep talking.'),
+      buildOption('phase_2_opt_2', 'I want to ask you something first.'),
+      buildOption('phase_2_opt_3', 'Leave the post office'),
+    ],
+    suggested_options: [
+      buildOption('phase_2_opt_1', '继续说下去。'),
+      buildOption('phase_2_opt_2', '我想先问你一个问题。'),
+      buildOption('phase_2_opt_3', '离开邮局'),
+    ],
     turn_count: 2,
     storyPhase: 2,
+    storyNodeTitle_zh: '初步倾听',
+    storyNodeTitle_ja: '初期の傾聴',
+    storyNodeTitle_en: 'Initial Listening',
+    storyNodeObjective_zh: '收集烦恼与基本方向。',
+    storyNodeObjective_ja: '悩みと基本方針を集める。',
+    storyNodeObjective_en: 'Collect the trouble and the basic direction.',
+    storyNodeType: 'mainline',
+    storyNodeType: 'mainline',
     chatHistory: [
       { role: 'user', parts: [{ text: '你好' }] },
       { role: 'model', parts: [{ text: 'opening line' }] },
@@ -140,10 +201,26 @@ function buildFallbackResponse(message: string, state: GameState): ChatResponseL
     reply_en: responseTextEn,
     emotion: 'thoughtful',
     reply: responseTextZh,
-    suggested_options_zh: ['我还想继续说。', '请帮我写一封信。', '离开邮局'],
-    suggested_options_ja: ['まだ話したいです。', '手紙を書いてください。', '郵便局を出る'],
-    suggested_options_en: ['I would like to keep talking.', 'Please help me write a letter.', 'Leave the post office'],
-    suggested_options: ['我还想继续说。', '请帮我写一封信。', '离开邮局'],
+    suggested_options_zh: [
+      buildOption(`phase_${state.storyPhase}_opt_1`, '我还想继续说。'),
+      buildOption(`phase_${state.storyPhase}_opt_2`, '请帮我写一封信。'),
+      buildOption(`phase_${state.storyPhase}_opt_3`, '离开邮局'),
+    ],
+    suggested_options_ja: [
+      buildOption(`phase_${state.storyPhase}_opt_1`, 'まだ話したいです。'),
+      buildOption(`phase_${state.storyPhase}_opt_2`, '手紙を書いてください。'),
+      buildOption(`phase_${state.storyPhase}_opt_3`, '郵便局を出る'),
+    ],
+    suggested_options_en: [
+      buildOption(`phase_${state.storyPhase}_opt_1`, 'I would like to keep talking.'),
+      buildOption(`phase_${state.storyPhase}_opt_2`, 'Please help me write a letter.'),
+      buildOption(`phase_${state.storyPhase}_opt_3`, 'Leave the post office'),
+    ],
+    suggested_options: [
+      buildOption(`phase_${state.storyPhase}_opt_1`, '我还想继续说。'),
+      buildOption(`phase_${state.storyPhase}_opt_2`, '请帮我写一封信。'),
+      buildOption(`phase_${state.storyPhase}_opt_3`, '离开邮局'),
+    ],
     resonance_change: 0,
     favorability_change: 0,
     ready_to_draft: false,
@@ -202,6 +279,7 @@ const GameUI: React.FC<GameUIProps> = ({ onBackToMenu }) => {
   const currentDialogue = useMemo(() => getLocalizedText(currentState, language), [currentState, language]);
   const currentOptions = useMemo(() => getLocalizedOptions(currentState, language), [currentState, language]);
   const currentNarrator = useMemo(() => getLocalizedNarrator(currentState, language), [currentState, language]);
+  const currentNodePresentation = useMemo(() => getLocalizedNodePresentation(currentState, language), [currentState, language]);
 
   useEffect(() => {
     if (currentState.turn_count === 1 && currentState.reply === '...') return;
@@ -286,7 +364,7 @@ const GameUI: React.FC<GameUIProps> = ({ onBackToMenu }) => {
     audioPrimedRef.current = true;
   };
 
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (message: string, selected_option_id?: string) => {
     const trimmed = message.trim();
     if (!trimmed || isSending) return;
 
@@ -299,11 +377,14 @@ const GameUI: React.FC<GameUIProps> = ({ onBackToMenu }) => {
     const timeoutId = window.setTimeout(() => controller.abort(), 30000);
 
     try {
+      const bodyPayload: any = { message: trimmed, state: currentState };
+      if (selected_option_id) bodyPayload.selected_option_id = selected_option_id;
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
-        body: JSON.stringify({ message: trimmed, state: currentState }),
+        body: JSON.stringify(bodyPayload),
       });
 
       if (!response.ok) {
@@ -375,8 +456,11 @@ const GameUI: React.FC<GameUIProps> = ({ onBackToMenu }) => {
 
   const handleOptionClick = (option: string) => {
     void primeAudio();
-    setInput(option);
-    void sendMessage(option);
+    // option is id when coming from DialogueBox; find label to send as message for context
+    const opt = currentOptions.find(o => o.id === option);
+    const label = opt?.label ?? option;
+    setInput(label);
+    void sendMessage(label, option);
   };
 
   const handleRestart = () => {
@@ -477,6 +561,10 @@ const GameUI: React.FC<GameUIProps> = ({ onBackToMenu }) => {
           speakerName="Violet Evergarden"
           narratorText={displayedNarrator}
           dialogueText={displayedDialogue}
+          nodeTitle={currentNodePresentation.title}
+          nodeObjective={currentNodePresentation.objective}
+          nodeType={currentNodePresentation.nodeType}
+          language={language}
           isTyping={isTyping}
           onMessageChange={setInput}
           message={input}

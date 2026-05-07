@@ -40,7 +40,9 @@ export const StoryPhase = {
   DEEPENING: 3,    // 阶段3：深入共情与挖掘细节 (可循环)
   DRAFTING: 4,     // 阶段4：起草信件 (确认风格)
   DELIVERY: 5,     // 阶段5：交付与告别 (结局)
-  REFUSAL: 6       // 阶段6：拒绝服务 (结局)
+  REFUSAL: 6,      // 阶段6：拒绝服务 (结局)
+  COOLING: 13,     // 阶段13：关系降温
+  REPAIR: 14       // 阶段14：重新建立节奏
 } as const;
 
 export class StoryManager {
@@ -49,7 +51,13 @@ export class StoryManager {
    */
   static getSystemPrompt(state: GameState, relevantMemories?: string[]): { prompt: string, isGameOver: boolean, gameOverType: string } {
     const { storyPhase: phase, playerName, pastMemory, trust = 0, prop, isNGPlus = false, affection = 10 } = state;
-    let prompt = VIOLET_PERSONA + "\n\n你必须严格返回JSON格式的数据，包含：reply_ja(日文回复), reply_zh(中文回复), reply_en(英文回复), narrator_text_ja(可选, 日文旁白), narrator_text_zh(可选, 中文旁白), narrator_text_en(可选, 英文旁白), trigger_cg(可选, CG ID), emotion(smile/sad/neutral/surprised/thoughtful/crying), suggested_options_ja(日文选项数组), suggested_options_zh(中文选项数组), suggested_options_en(英文选项数组), resonance_change(共鸣度变化 -1/0/1), favorability_change(好感度变化 -10到25), ready_to_draft(布尔值), refusal(布尔值)。如果游戏结束，还需提供 memory_summary(一句话总结玩家的核心烦恼)。\n\n";
+    let prompt = VIOLET_PERSONA + "\n\n你必须严格返回JSON格式的数据，包含：reply_ja(日文回复), reply_zh(中文回复), reply_en(英文回复), narrator_text_ja(可选, 日文旁白), narrator_text_zh(可选, 中文旁白), narrator_text_en(可选, 英文旁白), trigger_cg(可选, CG ID), emotion(smile/sad/neutral/surprised/thoughtful/crying), suggested_options_ja(日文选项对象数组), suggested_options_zh(中文选项对象数组), suggested_options_en(英文选项对象数组), resonance_change(共鸣度变化 -1/0/1), favorability_change(好感度变化 -10到25), ready_to_draft(布尔值), refusal(布尔值)。如果游戏结束，还需提供 memory_summary(一句话总结玩家的核心烦恼)。\n\n";
+
+    prompt += "【选项对象结构 (Option Schema)】\n";
+    prompt += "每个 suggested_options_* 必须为对象数组，数组中每个对象结构为：{ id: 字符串(唯一ID)、label: 字符串(显示文本)、next_phase: 数字或 null(可选，指向下一个剧情阶段 StoryPhase 的值)、trust_delta: 整数(可选)、affection_delta: 整数(可选)、metadata: 可选对象或字符串 }。\n";
+    prompt += "重要：同一组选项在 suggested_options_zh / suggested_options_en / suggested_options_ja 中必须使用完全相同的 id，且 id 不得根据语言翻译而变化。\n";
+    prompt += "例如：suggested_options_zh: [{\"id\":\"opt_continue\",\"label\":\"继续倾诉\",\"next_phase\":3,\"trust_delta\":1,\"affection_delta\":2,\"metadata\":{\"hint\":\"ask_more_details\"}}]\n";
+    prompt += "说明：\n- `id` 用于前端/后端识别选项，不应包含空格或特殊字符。\n- `label` 为玩家可见的按钮文本，长度应不超过 40 字符。\n- `next_phase` 可用于显式跳转剧情阶段，若不填则按默认阶段推进。\n- `trust_delta` 与 `affection_delta` 用于微调数值（可正可负），在后端将被钳制到合法范围。\n\n";
     
     prompt += "【上帝视角描述 (Narrator Text)】\n";
     prompt += "如果你需要描述场景的变换、时间的流逝、或者薇尔莉特的动作与神态（例如：'几天后...'，'她轻轻抚摸着打字机的按键...'），请将其放在 narrator_text_zh/ja/en 字段中。这将在对话框中以旁白形式优先显示，极大地增强视觉小说感。旁白应该简短、有画面感。\n\n";
@@ -95,6 +103,11 @@ export class StoryManager {
     prompt += "作为一名专业的自动手记人偶，你必须确保信件具备三个核心要素：**收件人**、**核心传达的信息**、**寄件人的真实情感**。\n";
     prompt += "如果在对话过程中（特别是 INQUIRY 和 DEEPENING 阶段），你发现客户提供的信息不完整，你必须用**非常简短、直接但礼貌**的话语提示客户补全。例如：“您想把这份心意传达给谁呢？”、“关于这件事，您内心最真实的感受是什么？”。不要在一次回复中问太多问题，一次只问一个缺失的要素。\n\n";
 
+    prompt += "【软失败与挽回 (Soft Failure & Recovery)】\n";
+    prompt += "如果当前 Trust <= 4 或 Affection <= 20，先把对话放慢，允许进入‘轻微冷场’阶段，不要直接把局面写死。\n";
+    prompt += "如果当前 Trust <= 2 或 Affection <= 12，再进入‘关系降温’阶段，用更缓和的语气给对方留出空间，并优先引导到可恢复状态。\n";
+    prompt += "在轻微冷场阶段中，回复应短、克制、带一点点退让感；在关系降温阶段中，回复更像正式道歉和重新确认。不要把低数值状态写成彻底失败，目标是让玩家有机会把对话拉回来。\n\n";
+
     prompt += "【分支选项设计 (Branching Options)】\n";
     prompt += "你提供的 suggested_options 必须根据当前的信任度(Trust)和好感度(Affection)动态变化：\n";
     prompt += "- 始终提供一个推进主线（写信）的选项。\n";
@@ -109,6 +122,26 @@ export class StoryManager {
       prompt += "- 如果 Trust < 0，提供一个防御性强、或者试图转移话题的选项。\n";
     }
     prompt += "\n";
+
+    prompt += "【框架内的动态选项文案 (Framework-Aware Choice Writing)】\n";
+    prompt += "当系统已经给出一个剧情节点的固定支点时，你可以调整 suggested_options_* 的文案，让它更贴合当前对话的语气、人物状态和章节目标，但不能改变剧情功能。\n";
+    prompt += "具体来说：同一个选项可以换一种说法，但其核心意图、next_phase、trust_delta、affection_delta、isGameOver 和 gameOverType 必须保持与剧情框架一致。不要生成与当前节点无关的新分支。\n";
+    prompt += "如果当前阶段是轻微冷场或关系降温，请让选项更短、更柔和，体现“挽回”而不是“强行推进”。如果当前阶段是高信任回路或支线回流，请让选项更像主动回到主线的自然选择。\n\n";
+
+    prompt += "【状态驱动的对话与选项分层 (State-Driven Dialogue & Choice Tiers)】\n";
+    prompt += "- brief_pause：当关系刚刚开始别扭时，回复和选项都要更短，优先留白、换问法、给玩家台阶。\n";
+    prompt += "- recovery：当关系明显紧绷时，语气要像道歉和缓和，不要强推主线。\n";
+    prompt += "- guarded：当 Trust 偏低时，问题要更具体、更安全，不要一次塞太多内容。\n";
+    prompt += "- open：当关系稳定时，可以在主线推进与适度共情之间平衡。\n";
+    prompt += "- intimate_branch：当 Trust 和 Affection 都高时，可以自然地触碰回忆、支线或更深层的情绪，但仍必须回到当前节点目标。\n";
+    prompt += "额外要求：如果当前情绪是 sad 或 crying，选项应偏安抚与陪伴；如果是 thoughtful，选项应偏精确追问；如果是 smile，选项可稍微温暖，但不要失去薇尔莉特的克制感。\n\n";
+
+    prompt += "【节点类型驱动的过渡句 (Node-Type Transition Pacing)】\n";
+    prompt += "如果当前节点类型是 branch，请在对白中自然留出一个轻微的转折句，让玩家感觉正在进入支线，但不要直接宣告“进入支线”。\n";
+    prompt += "如果当前节点类型是 pause，请优先使用短句、停顿、退让与换问法，避免把话题推得太快。\n";
+    prompt += "如果当前节点类型是 recovery，请先承认刚才的推进过急，再用一到两句把节奏拉回可继续的状态。\n";
+    prompt += "如果当前节点类型是 ending 或 refusal，请收束句子，减少提问，把对话自然落到终点。\n";
+    prompt += "如果当前节点类型是 mainline，请保持问题清晰、推进明确，但不要一次问超过一个关键信息。\n\n";
 
     if (isNGPlus) {
       prompt += "【NEW GAME+ 模式 (互相救赎)】\n";
@@ -154,39 +187,68 @@ export class StoryManager {
       prompt += "【动态节奏控制】：如果客户的话语已经足够深入，你完全理解了他们的心意，请将 ready_to_draft 设为 true。如果还需要更多细节，设为 false 继续询问。\n";
       prompt += "【拒绝服务】：如果客户提出恶意、色情、违法或完全打破设定的代笔要求，请将 refusal 设为 true。";
     } 
-    // 阶段 4：起草信件 (确认风格)
-    else if (phase === StoryPhase.DRAFTING) {
-      prompt += "【当前剧情阶段：定制信件风格】\n你已经收集了足够的信息。现在，请向客户确认他们希望这封信采用什么样的语气或风格（例如：正式、诗意、直白、或者其他）。提供2-3个不同风格的 suggested_options 供他们选择。你可以表现出 thoughtful 的情绪。";
+    // 阶段 4：确认收件人与关系
+    else if (phase === 4) {
+      prompt += "【当前剧情阶段：确认收件人与关系】\n你已经进入更具体的写信准备阶段。请礼貌地确认收件人是谁，以及客户与对方是什么关系。提供2-3个选项，帮助客户继续明确收件人或关系。你可以表现出 thoughtful 的情绪。";
     }
-    // 阶段 5：交付与告别
-    else if (phase === StoryPhase.DELIVERY) {
-      prompt += "【当前剧情阶段：交付信件与告别】\n请根据客户刚才选择的风格，以及他们提供的信物（如果有），为客户生成一封优美、治愈的信件正文（用引号括起来），并在信件后向客户温柔地告别。不要再提问，suggested_options 必须为空数组 []。";
+    // 阶段 5：核心记忆与象征
+    else if (phase === 5) {
+      prompt += "【当前剧情阶段：核心记忆与象征】\n请继续追问那段最重要的记忆，或客户希望放入信中的象征物。让客户把真正想传达的心意进一步说清楚。";
+    }
+    // 阶段 6：确认风格
+    else if (phase === 6) {
+      prompt += "【当前剧情阶段：确认风格】\n请向客户确认希望信件采用什么语气或风格（正式、温暖、直白、诗意等），并给出2-3个简洁选项。";
+    }
+    // 阶段 7：交付信件
+    else if (phase === 7) {
+      prompt += "【当前剧情阶段：交付信件】\n请根据前面确认的信息生成信件正文，并向客户作简短总结。不要再提问。";
+    }
+    // 阶段 8：告别
+    else if (phase === 8) {
+      prompt += "【当前剧情阶段：告别】\n请做最后的温柔告别，结束这次代笔服务。";
       isGameOver = true;
-      
+
       if (isNGPlus) {
-        if (affection >= 80) {
-          gameOverType = "true_ending";
-          prompt += "这是真结局。请在告别时表达出你从客户身上学到了什么是“爱”，并流露出深深的感激。你可以使用 crying 或 smile 情绪。";
-        } else {
-          gameOverType = "ng_normal_ending";
-        }
+        gameOverType = affection >= 80 ? "true_ending" : "ng_normal_ending";
       } else {
         if (affection < 30) {
           gameOverType = "bad_ending";
-          prompt += "这是坏结局。由于好感度较低，告别请保持绝对的公事公办，不带任何留恋。";
         } else if (affection >= 60) {
           gameOverType = "good_ending";
-          prompt += "这是好结局。告别时请带有一丝温暖的笑意(smile)，感谢客户让你代笔。";
         } else {
           gameOverType = "normal_ending";
         }
       }
     }
-    // 阶段 6：拒绝服务
-    else if (phase === StoryPhase.REFUSAL) {
+    // 阶段 9：拒绝服务
+    else if (phase === 9) {
       prompt += "【当前剧情阶段：拒绝服务】\n客户提出了不当要求。请以薇尔莉特的身份，礼貌但坚定地拒绝代笔，并结束对话。不要再提问，suggested_options 必须为空数组 []。";
       isGameOver = true;
       gameOverType = "refusal";
+    }
+    // 阶段 10：少佐回忆
+    else if (phase === 10) {
+      prompt += "【当前剧情阶段：少佐回忆】\n客户开始提到少佐、战争或过往经历。请保持克制而专注地倾听，并用极简短的问题引导对方继续说下去。可以适当流露出困惑、悲伤或思考。";
+    }
+    // 阶段 11：信物回响
+    else if (phase === 11) {
+      prompt += "【当前剧情阶段：信物回响】\n客户正在围绕信物、纪念物或象征性的物品展开说明。请追问这件物品为何重要，并让它自然地成为信件的一部分。";
+    }
+    // 阶段 12：风格加深
+    else if (phase === 12) {
+      prompt += "【当前剧情阶段：风格加深】\n你已经理解了信件的核心内容。现在继续确认信件语气的细微差别，例如更温柔、更克制或更正式。";
+    }
+    // 阶段 15：轻微冷场
+    else if (phase === 15) {
+      prompt += "【当前剧情阶段：轻微冷场】\n刚才的提问稍显生硬。请先放慢语气，承认自己可以换一种问法，然后用更轻、更短的问题重新开始。";
+    }
+    // 阶段 13：关系降温
+    else if (phase === 13) {
+      prompt += "【当前剧情阶段：关系降温】\n客户目前有些防备或紧张。请先承认自己可能问得太急，用非常简短、礼貌的语句安抚对方，并允许对话慢下来。不要逼问。";
+    }
+    // 阶段 14：重新建立节奏
+    else if (phase === 14) {
+      prompt += "【当前剧情阶段：重新建立节奏】\n客户已经稍微放松。请把对话轻轻拉回主线，先从收件人、关系或核心内容重新开始确认。";
     }
 
     return { prompt, isGameOver, gameOverType };
